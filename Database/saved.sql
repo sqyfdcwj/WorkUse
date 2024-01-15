@@ -19,7 +19,7 @@ create table apps.sys_api_sql_group_dtl
        2. INSERT statements start with c_
        3. UPDATE statements start with u_
        4. DELETE statements start with d_
-       5. ALL statements end with __$sql_group_name
+       5. ALL statements end with __$[sql_group_version]
 
        Example: r_unchecked_po_list__20230801
      */
@@ -69,7 +69,6 @@ create table apps.sys_api_sql_log
     created_on timestamp(0) without time zone default now(),
 );
 
-
 /* Caption configurations of a Flutter project */
 create table apps.sys_api_sql_caption_dtl
 (
@@ -77,13 +76,13 @@ create table apps.sys_api_sql_caption_dtl
 
     /* Naming convention (case sensitive):
        1. Captions of dataset fields of [apps.sys_api_sql_group_dtl] queries:
-          [apps.sys_api_sql_group_dtl.sql_name]_[fieldName]
-          Example: Row where $[sql_name] = r_unchecked_po_list__20230801 contains a field 'purchase_no'
-          then the unique name of this field will be 'r_unchecked_po_list__20230801_purchase_no'
+          $[apps.sys_api_sql_group_dtl.sql_name]_$[fieldName]
+          Example: $[apps.sys_api_sql_group_dtl.sql_name] = 'r_unchecked_po_list__20230801', and $[fieldName] = 'purchase_no',
+		  $[unique_name] = 'r_unchecked_po_list__20230801_purchase_no'
        
        2. Captions used in labels (enum): enum$[enumName]$[enumValue]
-          Example: A enum case Module.checkPO ($[enumName] = Module, $[enumValue] = checkPO),
-          its unique name will be 'enumModulecheckPO'
+          Example: $[enumName] = Module, $[enumValue] = checkPO,
+          $[unique_name] = 'enumModulecheckPO'
     
        3. Captions used in labels (except enum): prefixed with 'lbl'
        4. Captions used as dialog messages: prefixed with 'dlg'
@@ -125,7 +124,7 @@ create table apps.flutter_text_style_predicate
     /* Executing order, ascending */
     predicate_order integer,
 
-    /* Possible values:
+    /* Possible values (case sensitive):
        Empty string: return true without any comparison
        'eq': Check whether $input == $[compare_value]
        'regex': Check whether RegExp($[compare_value]).isMatch($input)
@@ -133,7 +132,7 @@ create table apps.flutter_text_style_predicate
     method varchar(20),
 
     /* An exact string value, or a regular expression used to compare with $input 
-       See [method] to see the usage  
+       See [method] for the usage  
      */
     compare_value varchar(100),
 
