@@ -204,8 +204,8 @@ create table apps.flutter_widget_config
 	 */
     alignment_y numeric(2, 1) default -1,
 
-	width integer,
-	height integer
+	  width integer,
+	  height integer
 );
 
 /* Configuration used by custom defined widget of Flutter project: [DatasetField] 
@@ -216,40 +216,40 @@ create table apps.flutter_widget_config
  */
 create table apps.flutter_dataset_field_layout
 (
-	layout_id serial primary key,
+    layout_id serial primary key,
 
-	/* See naming convention of [apps.sys_api_sql_caption_dtl.unique_name] 
-	   Used by Flutter file to link to a caption
-	 */
-	unique_name varchar(100),
+    /* See naming convention of [apps.sys_api_sql_caption_dtl.unique_name] 
+        Used by Flutter file to link to a caption
+    */
+    unique_name varchar(100),
 
-	/* Flutter file will do different layout according to the value set:
-	   0 - Display $value only
-	   1 - Display $caption and $value and put them in a row
-	   2 - Display $caption and $value and put them in a column
-	   default - Same as case 0
-	 */
-	layout_type integer default 0,
-
-    /* Ignored if $[layout_type] is not 1 */
-	caption_flex integer default 1,
+    /* Flutter file will do different layout according to the value set:
+        0 - Display $value only
+        1 - Display $caption and $value and put them in a row
+        2 - Display $caption and $value and put them in a column
+        default - Same as case 0
+    */
+    layout_type integer default 0,
 
     /* Ignored if $[layout_type] is not 1 */
-	content_flex integer default 1,
+    caption_flex integer default 1,
 
-	caption_alignment_x numeric(2, 1) default -1,
-	caption_alignment_y numeric(2, 1) default -1,
+    /* Ignored if $[layout_type] is not 1 */
+    content_flex integer default 1,
 
-	/* Overrides [apps.flutter_widget_config.alignment_x] */
-	content_alignment_x numeric(2, 1) default -1,
+    caption_alignment_x numeric(2, 1) default -1,
+    caption_alignment_y numeric(2, 1) default -1,
 
-	/* Overrides [apps.flutter_widget_config.alignment_y] */
-	content_alignment_y numeric(2, 1) default -1,
+    /* Overrides [apps.flutter_widget_config.alignment_x] */
+    content_alignment_x numeric(2, 1) default -1,
 
-	/* Whether should hide the field if $value is empty */
-	hide_on_empty boolean default true,
+    /* Overrides [apps.flutter_widget_config.alignment_y] */
+    content_alignment_y numeric(2, 1) default -1,
 
-    /* See [apps.flutter_text_style] */
-	caption_text_style_id integer
+    /* Whether should hide the field if $value is empty */
+    hide_on_empty boolean default true,
+
+      /* See [apps.flutter_text_style] */
+    caption_text_style_id integer
 );
 

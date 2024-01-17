@@ -1,0 +1,30 @@
+{
+    "lblUsername":{"en":"Username","zh_cn":"用户","zh_tw":"用戶"},
+    "lblPassword":{"en":"Password","zh_cn":"密码","zh_tw":"密碼"},
+    "lblCompany":{"en":"Company","zh_cn":"公司","zh_tw":"公司"},
+    "lblAutoLogin":{"en":"Auto Login","zh_cn":"自动登录","zh_tw":"自動登入"},
+    
+    "lblMenu":{"en":"Menu","zh_cn":"菜单","zh_tw":"選單"},
+    "lblModule":{"en":"Module","zh_cn":"Module","zh_tw":""},
+    "lblLanguage":{"en":"Language","zh_cn":"语言","zh_tw":"語言"},
+    "lblLogOut":{"en":"Log out","zh_cn":"退出登录","zh_tw":"登出"},
+
+    "lblLogin":{"en":"Login","zh_cn":"登录","zh_tw":"登入"},
+    "lblClear":{"en":"Clear","zh_cn":"清除","zh_tw":"清除"},
+    "lblSubmit":{"en":"Submit","zh_cn":"提交","zh_tw":"提交"},
+    "lblDone":{"en":"Done","zh_cn":"完成","zh_tw":"完成"},
+
+    "lblDownloading":{"en":"Downloading","zh_cn":"下载中","zh_tw":"下載中"},
+    "lblNoRecord":{"en":"No record","zh_cn":"无记录","zh_tw":"無紀錄"},
+
+    "lblDialogConfirm":{"en":"YES","zh_cn":"是","zh_tw":"是"},
+    "lblDialogCancel":{"en":"NO","zh_cn":"否","zh_tw":"否"},
+    "lblDialogReturn":{"en":"OK","zh_cn":"好","zh_tw":"好"},
+
+    "dlgWrongUsernamePassword":{"en":"Username or password is incorrect","zh_cn":"用户或密码不正确","zh_tw":"用户或密碼不正確"},
+
+    "dlgWebApiConnTimeout":{"en":"Connection timeout","zh_cn":"网络连接超时","zh_tw":"網絡連接超時"},
+    "dlgWebApiRecvTimeout":{"en":"Receive timeout","zh_cn":"网络返回超时","zh_tw":"網絡返回超時"},
+    "dlgWebApiError":{"en":"Error","zh_cn":"网络错误","zh_tw":"網絡錯誤"},
+    "dlgNoRecord":{"en":"No record","zh_cn":"无记录","zh_tw":"無紀錄"}
+}
