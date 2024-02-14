@@ -228,7 +228,7 @@ create table apps.flutter_widget_config
     pos_left integer,
     pos_right integer,
     pos_top integer,
-    pos_bottom integer, 
+    pos_bottom integer
 );
 
 /* Configuration used by custom defined widget of Flutter project: [DatasetField] 
