@@ -1,0 +1,17 @@
+[
+    {"style_name":"black.14.bold","font_size":14,"is_bold":true,"a":255},
+    {"style_name":"button.label","font_size":14,"is_bold":true,"a":255,"r":255,"g":255,"b":255},
+    {"style_name":"caption.grey","font_size":14,"a":255,"r":97,"g":97,"b":97},
+    {"style_name":"default","font_size":14,"a":255},
+    {"style_name":"defaultFont.green","font_size":14,"a":255,"r":76,"g":175,"b":80},
+    {"style_name":"defaultFont.red","font_size":14,"a":255,"r":244,"g":67,"b":54},
+    {"style_name":"dtl.vendor","font_size":20,"a":255},
+    {"style_name":"searchCriteria.caption","font_size":18,"is_bold":true,"a":255},
+    {"style_name":"serial","font_size":14,"a":255,"r":33,"g":150,"b":243},
+    {"style_name":"title","font_size":18,"is_bold":true,"a":255},
+    {"style_name":"title.blue","font_size":18,"is_bold":true,"a":255,"r":33,"g":150,"b":243},
+    {"style_name":"title.red","font_size":18,"is_bold":true,"a":255,"r":255},
+    {"style_name":"workflow.checked","font_size":14,"a":255,"r":158,"g":158,"b":158},
+    {"style_name":"workflow.default","font_size":14,"a":255},
+    {"style_name":"workflow.rejected","font_size":14,"a":255,"r":255}
+]

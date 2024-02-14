@@ -1,0 +1,24 @@
+{
+    "PODtlAmountSummary":[
+        {"path":"1-Column"},
+        {"path":"1-Column/1-Row","text_style_name":"dtl.16","padding_top":5},
+        {"path":"1-Column/1-Row/1-Caption","flex":105,"unique_name":"PODtlAmountSummary_amount_gross","alignment_x":1},
+        {"path":"1-Column/1-Row/2-Data","flex":25,"unique_name":"curcode","alignment_x":0},
+        {"path":"1-Column/1-Row/3-Data","flex":35,"unique_name":"amount_gross","alignment_x":1},
+        {"path":"1-Column/1-Row/4-Container","flex":35},
+        {"path":"1-Column/2-Row","text_style_name":"dtl.16"},
+        {"path":"1-Column/2-Row/1-Caption","flex":105,"unique_name":"PODtlAmountSummary_amount_tax","alignment_x":1},
+        {"path":"1-Column/2-Row/2-Data","flex":25,"unique_name":"curcode","alignment_x":0},
+        {"path":"1-Column/2-Row/3-Data","flex":35,"unique_name":"amount_tax","alignment_x":1},
+        {"path":"1-Column/2-Row/4-Container","flex":35},
+        {"path":"1-Column/3-Row","text_style_name":"dtl.16.bold","padding_bottom":20},
+        {"path":"1-Column/3-Row/1-Caption","flex":105,"unique_name":"PODtlAmountSummary_amount_net","alignment_x":1},
+        {"path":"1-Column/3-Row/2-Data","flex":25,"unique_name":"curcode","alignment_x":0},
+        {"path":"1-Column/3-Row/3-Data","flex":35,"unique_name":"amount_net","alignment_x":1},
+        {"path":"1-Column/3-Row/4-Container","flex":35},
+        {"path":"1-Column/4-Data","unique_name":"remark"},
+        {"path":"1-Column/5-Data","unique_name":"checking_remark"},
+        {"path":"1-Column/6-Data","unique_name":"updated_on"},
+        {"path":"1-Column/7-Data","unique_name":"updated_by"}
+    ]
+}

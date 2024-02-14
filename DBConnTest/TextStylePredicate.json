@@ -1,0 +1,6 @@
+[
+    {"unique_name":"r_po_dtl_list__20230801_unit_cost_diff","predicate_order":1,"method":"regex","compare_value":"^\u2191.*","style_id":5,"style_name":"defaultFont.red","discontinued":null,"admin_log":"Text style predicate","font_size":14,"a":255,"r":244,"g":67,"b":54},
+    {"unique_name":"r_po_dtl_list__20230801_unit_cost_diff","predicate_order":2,"method":"regex","compare_value":"^\u2193.*","style_id":6,"style_name":"defaultFont.green","discontinued":null,"admin_log":"Text style predicate","font_size":14,"a":255,"r":76,"g":175,"b":80},
+    {"unique_name":"r_po_dtl_list__20230801_unit_cost_perc_diff","predicate_order":1,"method":"regex","compare_value":"^\u2191.*","style_id":5,"style_name":"defaultFont.red","discontinued":null,"admin_log":"Text style predicate","font_size":14,"a":255,"r":244,"g":67,"b":54},
+    {"unique_name":"r_po_dtl_list__20230801_unit_cost_perc_diff","predicate_order":2,"method":"regex","compare_value":"^\u2193.*","style_id":6,"style_name":"defaultFont.green","discontinued":null,"admin_log":"Text style predicate","font_size":14,"a":255,"r":76,"g":175,"b":80}
+]
