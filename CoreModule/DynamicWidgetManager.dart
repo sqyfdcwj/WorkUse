@@ -180,11 +180,19 @@ typedef DynamicWidgetBuilder = Widget Function(
 class DynamicWidget extends StatelessWidget {
 
   final String configName;
+
+  ///
   final DynamicWidgetData widgetData;
+
+  ///
   final DynamicWidgetData parentWidgetData;
+
   final Map<String, String> data;
+
+  /// Called when [widgetData.widgetType] is neither 'Stack', 'Column' and 'Row'
   final DynamicWidgetBuilder builder;
 
+  /// When given [configName] cannot locate any [DynamicWidgetData] tree
   final Widget Function(BuildContext) defaultBuilder;
 
   const DynamicWidget._({
@@ -212,19 +220,25 @@ class DynamicWidget extends StatelessWidget {
 
   String get parentWidgetType => parentWidgetData.widgetType;
   String get widgetType => widgetData.widgetType;
-  bool get canWrapInExpanded => parentWidgetType == "Column" || parentWidgetType == "Row";
+
+  bool get parentIsColRow => parentWidgetType == "Column" || parentWidgetType == "Row";
+  bool get parentIsStack => parentWidgetType == "Stack";
 
   @override
   Widget build(BuildContext context) {
+    // No DynamicWidgetData tree is found
     if (widgetData == DynamicWidgetManager().defaultValue) {
-      // Log.e("Return default builder");
       return defaultBuilder(context);
     }
 
     final childrenData = widgetData._children;
 
     Widget child;
-    if (widgetType == "Column") {
+    if (widgetType == "Stack") {
+      child = childrenData.isNotEmpty
+        ? Stack(children: childrenData.map(buildChildWidget).toList())
+        : Container();
+    } else if (widgetType == "Column") {
       child = childrenData.isNotEmpty
         ? Column(children: childrenData.map(buildChildWidget).toList())
         : Container();
@@ -252,8 +266,12 @@ class DynamicWidget extends StatelessWidget {
       child: child
     );
 
-    if (canWrapInExpanded || widgetData.flex > 0) {
+    if (parentIsColRow && widgetData.flex > 0) {
       child = Expanded(flex: widgetData.flex, child: child);
+    } else if (parentIsStack) {
+      child = Positioned(
+        child: child,
+      );
     }
 
     if (widgetData.textStyle != null) {
@@ -270,7 +288,7 @@ class DynamicWidget extends StatelessWidget {
     return DynamicWidget._(
       configName: configName,
       widgetData: childData,
-      parentWidgetData: widgetData,
+      parentWidgetData: widgetData, // Self
       data: data,
       builder: builder,
       defaultBuilder: defaultBuilder,
