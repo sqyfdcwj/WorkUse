@@ -1,5 +1,4 @@
 
-import '../Constants/TypeDef.dart';
 import 'Export.dart';
 
 class DataSourceManager extends BootstrapImpl {
@@ -8,8 +7,8 @@ class DataSourceManager extends BootstrapImpl {
   static final _instance = DataSourceManager._();
   factory DataSourceManager() => _instance;
 
-  final ListStringMap _companyList = [];
-  ListStringMap get companyList => _companyList;
+  final List<Map<String, String>> _companyList = [];
+  List<Map<String, String>> get companyList => _companyList;
 
   @override
   Future<void> init() async {
