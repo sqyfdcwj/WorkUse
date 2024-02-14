@@ -99,7 +99,7 @@ create table apps.flutter_text_style
 (
     style_id serial primary key,
 
-	/* Used by developer. Provide info about what scenario this style is used in. */
+	  /* Used by developer. Provide info about what scenario this style is used in. */
     style_name varchar(50) unique not null,
 
     font_size integer default 14,
@@ -124,10 +124,18 @@ create table apps.flutter_text_style_predicate
     /* Executing order, ascending */
     predicate_order integer,
 
-    /* Possible values (case sensitive):
-       Empty string: return true without any comparison
-       'eq': Check whether $input == $[compare_value]
-       'regex': Check whether RegExp($[compare_value]).isMatch($input)
+    /* This field is case sensitive.
+      The value will be used with $[input] and $[compare_value]. 
+
+      Pseudo code:
+      switch ($[input]) {
+          case "": // Empty string
+              return true;
+          case "eq":
+              return $[input] == $[compare_value];
+          case "regex":
+              return Regex($[compare_value]).isMatch($[input]);    
+      }
      */
     method varchar(20),
 
@@ -136,7 +144,7 @@ create table apps.flutter_text_style_predicate
      */
     compare_value varchar(100),
 
-    /* See [apps.flutter_text_style] */
+    /* See table [apps.flutter_text_style] */
     text_style_id integer
 );
 
@@ -154,58 +162,73 @@ create table apps.flutter_widget_config
     /* For root node, $[depth] = 1 */
     depth integer,
 
-    /* If $[widget_type] is 'Row' or 'Column', it will be handled by the Flutter project file;
-	   otherwise developer should handle the case.
-	   If $[widget_type] is 'Data', developer should also maintain the records in [apps.flutter_dataset_field_layout]
+    /* If $[widget_type] is either 'Row' or 'Column', the Flutter project file will handle it,
+	    otherwise developer should handle the case.
+	    If $[widget_type] is 'Data', the developer should also maintain the records 
+      in table [apps.flutter_dataset_field_layout]
      */
     widget_type varchar(50),
 
     /* This field is used by the parent node.
-	   If $[widget_type] of parent is neither 'Row' nor 'Column', the child node with smallest $[widget_order] will be used;
-	   otherwise all children nodes are used.
-	 */
+      If $[widget_type] of parent is neither 'Row' nor 'Column', the child node with smallest $[widget_order] will be used;
+      otherwise all children nodes are used.
+	  */
     widget_order integer,
 
-    /* Ignored if $[widget_type] is 'Row' or 'Column'.
-       If $[widget_type] is 'Data', it represents the field name of a dataset;
-       otherwise it represents the unique name of the widget, which is usually hard-coded in project, set by developer
-       Developer should handle the case other than 'Row' or 'Column'.
+    /* Ignored if $[widget_type] is one of 'Row', 'Column' or 'Stack',
+      If $[widget_type] is 'Data', it represents the field name of a dataset;
+      otherwise it represents the unique name of the widget, which is usually hard-coded in project, set by developer
      */
     unique_name varchar(100),
 
-    /* Ignored if $[widget_type] of parent is neither 'Row' nor 'Column', or $[flex] < 1;
-       otherwise it will be used to build a [Expanded] widget in Flutter
+    /* Used to build a Flutter [Expanded] widget.
+      The widget will be wrapped in a [Expanded] widget when ALL of the following condition is satisfied:
+      1. $[widget_type] of parent is either 'Row' or 'Column'
+      2. $[flex] >= 1
      */
     flex integer default 0,
 
-	/* See [apps.flutter_text_style] 
-       If set, the text style will be applied to the current widget and all its children, 
-	   until overriden by another text style in child widget
+	  /* See table [apps.flutter_text_style] 
+      If set, the text style will be applied to the current widget and all its children, 
+      until overriden by another text style in child widget
      */
     text_style_id integer,
 
+    /* EdgeInset releated */
     padding_left integer default 0,
     padding_right integer default 0,
     padding_top integer default 0,
     padding_bottom integer default 0,
 
+    /* Color related */
     background_a integer,
     background_r integer,
     background_g integer,
     background_b integer,
 
     /* Valid range is from -1 to 1 (left to right) 
-	   Ignored if $[widget_type] is 'Data'. $[apps.flutter_dataset_field_layout.content_alignment_x] will be used
-	 */
+      If $[widget_type] is 'Data', this value is discarded. 
+      $[apps.flutter_dataset_field_layout.content_alignment_x] will be used
+	   */
     alignment_x numeric(2, 1) default -1,
 
     /* Valid range is from -1 to 1 (top to bottom) 
-	   Ignored if $[widget_type] is 'Data'. $[apps.flutter_dataset_field_layout.content_alignment_y] will be used
-	 */
+      If $[widget_type] is 'Data', this value is discarded. 
+	    $[apps.flutter_dataset_field_layout.content_alignment_y] will be used
+	   */
     alignment_y numeric(2, 1) default -1,
 
 	  width integer,
-	  height integer
+	  height integer,
+
+    /* Ignored if $[widget_type] of parent is not 'Stack'.
+      Used to build a [Positioned] widget which is used in a [Stack] widget
+      If you don't need to use the value, set it to NULL and do not set it to 0.
+     */
+    pos_left integer,
+    pos_right integer,
+    pos_top integer,
+    pos_bottom integer, 
 );
 
 /* Configuration used by custom defined widget of Flutter project: [DatasetField] 
@@ -219,15 +242,15 @@ create table apps.flutter_dataset_field_layout
     layout_id serial primary key,
 
     /* See naming convention of [apps.sys_api_sql_caption_dtl.unique_name] 
-        Used by Flutter file to link to a caption
+      Used by Flutter file to link to a caption
     */
     unique_name varchar(100),
 
     /* Flutter file will do different layout according to the value set:
-        0 - Display $value only
-        1 - Display $caption and $value and put them in a row
-        2 - Display $caption and $value and put them in a column
-        default - Same as case 0
+      0 - Display $value only
+      1 - Display $caption and $value and put them in a row
+      2 - Display $caption and $value and put them in a column
+      default - Treat as case 0
     */
     layout_type integer default 0,
 
@@ -249,7 +272,7 @@ create table apps.flutter_dataset_field_layout
     /* Whether should hide the field if $value is empty */
     hide_on_empty boolean default true,
 
-      /* See [apps.flutter_text_style] */
+    /* See table [apps.flutter_text_style] */
     caption_text_style_id integer
 );
 
