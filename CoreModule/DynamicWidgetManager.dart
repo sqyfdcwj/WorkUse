@@ -113,7 +113,12 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
       ),
       textStyle: (int.tryParse(map["text_style_id"] ?? "0") ?? 0) == 0
         ? null
-        : TextStyleManager().getFromMap(map)
+        : TextStyleManager().getFromMap(map),
+
+      posLeft: double.tryParse(map["pos_left"] ?? ""),
+      posRight: double.tryParse(map["pos_right"] ?? ""),
+      posTop: double.tryParse(map["pos_top"] ?? ""),
+      posBottom: double.tryParse(map["pos_bottom"] ?? ""),
     );
   }
 }
@@ -139,6 +144,11 @@ class DynamicWidgetData {
 
   final TextStyle? textStyle;
 
+  final double? posLeft;
+  final double? posRight;
+  final double? posTop;
+  final double? posBottom;
+
   final List<DynamicWidgetData> _children = [];
 
   DynamicWidgetData({
@@ -160,6 +170,11 @@ class DynamicWidgetData {
     this.height,
 
     this.textStyle,
+
+    this.posLeft,
+    this.posRight,
+    this.posTop,
+    this.posBottom,
   });
 
   void clear() {
@@ -266,10 +281,17 @@ class DynamicWidget extends StatelessWidget {
       child: child
     );
 
+    /* The earlier version uses ||
+     * Potential hazard
+     **/
     if (parentIsColRow && widgetData.flex > 0) {
       child = Expanded(flex: widgetData.flex, child: child);
     } else if (parentIsStack) {
       child = Positioned(
+        left: widgetData.posLeft,
+        right: widgetData.posRight,
+        top: widgetData.posTop,
+        bottom: widgetData.posBottom,
         child: child,
       );
     }
