@@ -66,7 +66,7 @@ create table apps.sys_api_sql_log
     /* Raw input that processed by API */
     response_xml text,
 
-    created_on timestamp(0) without time zone default now(),
+    created_on timestamp(0) without time zone default now()
 );
 
 /* Caption configurations of a Flutter project */
@@ -228,7 +228,16 @@ create table apps.flutter_widget_config
     pos_left integer,
     pos_right integer,
     pos_top integer,
-    pos_bottom integer
+    pos_bottom integer,
+
+    /* Possible values: start, end, center, spaceBetween, spaceAround, spaceEvenly */
+    main_axis_alignment varchar(15),
+
+    /* Possible values: start, end, center, stretch, baseline */
+    cross_axis_alignment varchar(10),
+
+    /* Possible values: alphabetic, ideographic */
+    text_baseline varchar(15)
 );
 
 /* Configuration used by custom defined widget of Flutter project: [DatasetField] 
