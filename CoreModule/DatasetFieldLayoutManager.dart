@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
-class DatasetFieldLayoutManager extends ManagerBootstrapMap<DatasetFieldLayout> {
+class DataSetFieldLayoutManager extends ManagerBootstrapMap<DataSetFieldLayout> {
 
-  DatasetFieldLayoutManager._();
-  static final _instance = DatasetFieldLayoutManager._();
-  factory DatasetFieldLayoutManager() => _instance;
+  DataSetFieldLayoutManager._();
+  static final _instance = DataSetFieldLayoutManager._();
+  factory DataSetFieldLayoutManager() => _instance;
 
-  @override final DatasetFieldLayout defaultValue = const DatasetFieldLayout(
+  @override final DataSetFieldLayout defaultValue = const DataSetFieldLayout(
     uniqueName: "",
     layoutType: 0,  // Single value
     captionFlex: 1,
@@ -21,8 +21,8 @@ class DatasetFieldLayoutManager extends ManagerBootstrapMap<DatasetFieldLayout> 
   );
 
   @override
-  DatasetFieldLayout getFromMap(Map<String, String> map) {
-    return DatasetFieldLayout(
+  DataSetFieldLayout getFromMap(Map<String, String> map) {
+    return DataSetFieldLayout(
       uniqueName: map["unique_name"] ?? "",
       layoutType: int.tryParse(map["layout_type"] ?? "1") ?? 1,
       captionFlex: int.tryParse(map["caption_flex"] ?? "1") ?? 1,
@@ -37,7 +37,7 @@ class DatasetFieldLayoutManager extends ManagerBootstrapMap<DatasetFieldLayout> 
       ),
       hideOnEmpty: int.tryParse(map["hide_on_empty"] ?? "0") == 1,
       captionTextStyle: TextStyleManager().getFromMap(map),
-      contentTextStyle: null,
+      // contentTextStyle: null,
     );
   }
 
@@ -53,7 +53,7 @@ class DatasetFieldLayoutManager extends ManagerBootstrapMap<DatasetFieldLayout> 
   }
 }
 
-class DatasetFieldLayout {
+class DataSetFieldLayout {
 
   final String uniqueName;
 
@@ -71,7 +71,7 @@ class DatasetFieldLayout {
   final TextStyle? captionTextStyle;
   final TextStyle? contentTextStyle;
 
-  const DatasetFieldLayout({
+  const DataSetFieldLayout({
     required this.uniqueName,
     required this.layoutType,
     required this.captionFlex,
@@ -85,7 +85,7 @@ class DatasetFieldLayout {
 }
 
 
-class DatasetField extends StatelessWidget {
+class DataSetField extends StatelessWidget {
 
   final SqlGroupName sqlGroupName;
   final String sqlDisplayName;
@@ -95,7 +95,7 @@ class DatasetField extends StatelessWidget {
   final TextStyle? defaultContentTextStyle;
   final Alignment? defaultContentAlignment;
 
-  const DatasetField({
+  const DataSetField({
     super.key,
     required this.sqlGroupName,
     required this.sqlDisplayName,
@@ -115,10 +115,10 @@ class DatasetField extends StatelessWidget {
       fieldName
     );
 
-    /// Get DatasetFieldLayout instance
+    /// Get DataSetFieldLayout instance
 
-    final layout = DatasetFieldLayoutManager().get(uniqueName)
-      ?? DatasetFieldLayoutManager().defaultValue;
+    final layout = DataSetFieldLayoutManager().get(uniqueName)
+      ?? DataSetFieldLayoutManager().defaultValue;
 
     if (layout.hideOnEmpty && content.isEmpty) {
       return Container();

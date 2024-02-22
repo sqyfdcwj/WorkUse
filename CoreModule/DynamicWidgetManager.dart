@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
+final dwMgr = DynamicWidgetManager();
+
 class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
 
   DynamicWidgetManager._();
@@ -20,7 +22,6 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
     padding: EdgeInsets.zero,
     color: Colors.transparent,
     alignment: Alignment.topLeft,
-
   );
 
   @override final String sourceFieldName = "dynamic_widget_list";
@@ -32,10 +33,6 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
     );
   }
 
-  bool _isRootData(DynamicWidgetData widgetData) {
-    return widgetData.depth == 1 && widgetData.parentId == 0;
-  }
-
   @override
   bool initWithWebApiResult(WebApiResult webApiResult) {
     if (!webApiResult.isSuccess) {
@@ -44,14 +41,18 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
     final list = webApiResult.asListStringMap(fieldName: sourceFieldName);
     final widgetDataList = list.map(getFromMap).toList();
     final configNameSet = <String>{};
-    final rootWidgetDataList = widgetDataList.where(_isRootData).toList();
+    final rootWidgetDataList = widgetDataList.where((data) => data.isRoot).toList();
 
     // Distinct on configName
     rootWidgetDataList.retainWhere((element) => configNameSet.add(element.configName));
     for (final rootData in rootWidgetDataList) {
       dataMap[rootData.configName] = rootData;
       _buildDynamicWidgetDataTree(rootData, widgetDataList);
-      _printData(rootData);
+    }
+
+    final singleWidgetDataList = widgetDataList.where((data) => data.isSingle).toList();
+    for (final singleData in singleWidgetDataList) {
+      dataMap[singleData.configName] = singleData;
     }
     return true;
   }
@@ -71,14 +72,6 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
     data._children.sort((lhs, rhs) => lhs.widgetOrder > rhs.widgetOrder ? 1 : -1);
     for (final child in data._children) {
       _buildDynamicWidgetDataTree(child, widgetDataList);
-    }
-  }
-
-  void _printData(DynamicWidgetData data) {
-    String msg = List.filled((data.depth - 1) * 2, "").join();
-    // print("$msg${data.configName} ${data.widgetType} ${data.depth} ${data.uniqueName}");
-    for (final child in data._children) {
-      _printData(child);
     }
   }
 
@@ -105,20 +98,26 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
       ),
       width: double.tryParse(map["width"] ?? ""),
       height: double.tryParse(map["height"] ?? ""),
-      color: Color.fromARGB(
-        int.tryParse(map["background_a"] ?? "0") ?? 0,
-        int.tryParse(map["background_r"] ?? "0") ?? 0,
-        int.tryParse(map["background_g"] ?? "0") ?? 0,
-        int.tryParse(map["background_b"] ?? "0") ?? 0,
-      ),
+      color: DynamicWidgetData.parseColor(map),
       textStyle: (int.tryParse(map["text_style_id"] ?? "0") ?? 0) == 0
         ? null
         : TextStyleManager().getFromMap(map),
-
       posLeft: double.tryParse(map["pos_left"] ?? ""),
       posRight: double.tryParse(map["pos_right"] ?? ""),
       posTop: double.tryParse(map["pos_top"] ?? ""),
       posBottom: double.tryParse(map["pos_bottom"] ?? ""),
+      mainAxisAlignment: (String name) {
+        return DynamicWidgetData._mainAxisAlignmentMap[name.toLowerCase()]
+            ?? MainAxisAlignment.start;
+      } (map["main_axis_alignment"] ?? ""),
+      crossAxisAlignment: (String name) {
+        return DynamicWidgetData._crossAxisAlignmentMap[name.toLowerCase()]
+            ?? CrossAxisAlignment.start;
+      } (map["cross_axis_alignment"] ?? ""),
+      textBaseline: (String name) {
+        return DynamicWidgetData._textBaselineMap[name.toLowerCase()]
+            ?? TextBaseline.alphabetic;
+      } (map["text_baseline"] ?? ""),
     );
   }
 }
@@ -139,7 +138,7 @@ class DynamicWidgetData {
   final String uniqueName;
 
   final EdgeInsets padding;
-  final Color color;
+  final Color? color;
   final Alignment alignment;
 
   final TextStyle? textStyle;
@@ -150,6 +149,37 @@ class DynamicWidgetData {
   final double? posBottom;
 
   final List<DynamicWidgetData> _children = [];
+
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
+  final TextBaseline textBaseline;
+
+  bool get isRoot => depth == 1 && parentId == 0;
+  bool get isSingle => parentId == -1;
+
+  static late final Map<String, MainAxisAlignment> _mainAxisAlignmentMap
+  = Map.fromEntries(MainAxisAlignment.values.map((ali) => MapEntry(ali.name.toLowerCase(), ali)));
+
+  static late final Map<String, CrossAxisAlignment> _crossAxisAlignmentMap
+  = Map.fromEntries(CrossAxisAlignment.values.map((ali) => MapEntry(ali.name.toLowerCase(), ali)));
+
+  static late final Map<String, TextBaseline> _textBaselineMap
+  = Map.fromEntries(TextBaseline.values.map((line) => MapEntry(line.name.toLowerCase(), line)));
+
+  static Color? parseColor(Map<String, String> map, {
+    String fieldA = "background_a",
+    String fieldR = "background_r",
+    String fieldG = "background_g",
+    String fieldB = "background_b",
+  }) {
+    final a = int.tryParse(map[fieldA] ?? "") ?? -1;
+    final r = int.tryParse(map[fieldR] ?? "") ?? -1;
+    final g = int.tryParse(map[fieldG] ?? "") ?? -1;
+    final b = int.tryParse(map[fieldB] ?? "") ?? -1;
+    return (a < 0 && r < 0 && g < 0 && b < 0)
+      ? null
+      : Color.fromARGB(a, r, g, b);
+  }
 
   DynamicWidgetData({
     required this.id,
@@ -175,6 +205,10 @@ class DynamicWidgetData {
     this.posRight,
     this.posTop,
     this.posBottom,
+
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.start,
+    this.textBaseline = TextBaseline.alphabetic,
   });
 
   void clear() {
@@ -255,11 +289,21 @@ class DynamicWidget extends StatelessWidget {
         : Container();
     } else if (widgetType == "Column") {
       child = childrenData.isNotEmpty
-        ? Column(children: childrenData.map(buildChildWidget).toList())
+        ? Column(
+            mainAxisAlignment: widgetData.mainAxisAlignment,
+            crossAxisAlignment: widgetData.crossAxisAlignment,
+            textBaseline: widgetData.textBaseline,
+            children: childrenData.map(buildChildWidget).toList()
+          )
         : Container();
     } else if (widgetType == "Row") {
       child = childrenData.isNotEmpty
-        ? Row(children: childrenData.map(buildChildWidget).toList())
+        ? Row(
+            mainAxisAlignment: widgetData.mainAxisAlignment,
+            crossAxisAlignment: widgetData.crossAxisAlignment,
+            textBaseline: widgetData.textBaseline,
+            children: childrenData.map(buildChildWidget).toList()
+          )
         : Container();
     } else {
       child = builder(

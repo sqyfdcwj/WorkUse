@@ -4,14 +4,15 @@ export 'Bootstrap.dart';
 
 export 'EnumMixin.dart';
 
+export 'AppConfigManager.dart';
 export 'CaptionManager.dart';
 export 'DatasetFieldLayoutManager.dart';
-export 'DialogUtil.dart';
+export 'DataSourceManager.dart';
 export 'DynamicWidgetManager.dart';
 export 'TextStyleManager.dart';
 export 'TextStylePredicateManager.dart';
 
-export 'DataSourceManager.dart';
+export 'DialogUtil.dart';
 export 'LocalStorage.dart';
 
 export 'Global.dart';

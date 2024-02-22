@@ -1,11 +1,30 @@
 
+library dialog;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
+part 'DialogUtil_Android.dart';
+part 'DialogUtil_iOS.dart';
+
 enum DlgType { success, fail, alert, confirm, }
 
+final dlg2 = isAndroid ? DialogUtilAndroid() : DialogUtilIOS();
 final dlg = DialogUtil();
+
+abstract class Dlg {
+
+  Future<bool?> showYesNo({
+    String unYes = "",
+    String unNo = "",
+  });
+}
+
+abstract class DlgMixin implements Dlg {
+
+}
+
 
 class DialogUtil {
 

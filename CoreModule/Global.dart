@@ -7,7 +7,7 @@ enum Module with EnumUniqueNameMixin {
   checkPO("Check PO"),
   approvePO("Approve PO"),
   approvePOHist("Approve History"),
-  salesOrder("Sales Order")
+  salesOrder("Sales Order"),
   ;
 
   @override final String displayName;
@@ -34,8 +34,14 @@ class Global {
     }
   }
 
+  /// When not logged in or there is any dialogs, disable user to open drawer by swping.
+  final ValueNotifier<bool> allowOpenDrawer = ValueNotifier(false);
+
   final ValueNotifier<Map<String, String>?> curCompany = ValueNotifier(null);
   final ValueNotifier<Module> curModule = ValueNotifier(Module.checkPO);
 
   String get curCompanyId => curCompany.value?["company_id"] ?? "0";
+
+  void enableOpenDrawer() => allowOpenDrawer.value = true;
+  void disableOpenDrawer() => allowOpenDrawer.value = false;
 }

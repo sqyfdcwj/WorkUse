@@ -1,7 +1,12 @@
 
+library text_style_manager;
+
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
+part 'TextStyleManager_var.dart';
+
+/// The textStyleManager also serves as ColorManager
 final tsMgr = TextStyleManager();
 
 class TextStyleManager extends ManagerBootstrapMap<TextStyle> {
@@ -30,12 +35,7 @@ class TextStyleManager extends ManagerBootstrapMap<TextStyle> {
   TextStyle getFromMap(Map<String, String> map) {
     return TextStyle(
       fontSize: double.tryParse(map["font_size"] ?? "14") ?? 14,
-      color: Color.fromARGB(
-        int.tryParse(map["a"] ?? "255") ?? 255,
-        int.tryParse(map["r"] ?? "0") ?? 0,
-        int.tryParse(map["g"] ?? "0") ?? 0,
-        int.tryParse(map["b"] ?? "0") ?? 0,
-      ),
+      color: DynamicWidgetData.parseColor(map, fieldA: "a", fieldR: "r", fieldG: "g", fieldB: "b"),
       fontWeight: (int.tryParse(map["is_bold"] ?? "0") ?? 0) == 1
         ? FontWeight.bold
         : FontWeight.normal,
@@ -44,4 +44,6 @@ class TextStyleManager extends ManagerBootstrapMap<TextStyle> {
         : FontStyle.normal,
     );
   }
+
+  Color? getColor(String name) => get(name)?.color;
 }

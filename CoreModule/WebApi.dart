@@ -22,6 +22,7 @@ class WebApi {
       "request_user_lv": global.userLv,
       "request_staff_id": global.staffId,
       "request_company_id": global.curCompanyId,
+      "request_app_version": WebApiEndpoint.appVersion,
     };
   }
 

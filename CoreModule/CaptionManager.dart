@@ -50,14 +50,12 @@ class CaptionManager extends ManagerBootstrapMap<CaptionData> {
       final json = await rootBundle.loadString("assets/CaptionManager/caption_data.json");
       final map = jsonDecode(json);
       if (map is Map) {
-        print("The local asset is valid !");
         for (final entry in map.entries) {
           if (entry.key is! String || entry.value is! Map) {
             continue;
           }
           try {
             dataMap[entry.key] = getFromMap(Map<String, String>.from(entry.value));
-            print("OK");
           } catch (e) { }
         }
       } else {

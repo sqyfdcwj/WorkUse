@@ -8,9 +8,10 @@ class Bootstrap {
   factory Bootstrap() => _instance;
 
   final List<BootstrapImpl> _coreModuleList = [
+    AppConfigManager(),
     CaptionManager(),
     DataSourceManager(),
-    DatasetFieldLayoutManager(),
+    DataSetFieldLayoutManager(),
     DynamicWidgetManager(),
     TextStyleManager(),
     TextStylePredicateManager(),
@@ -44,7 +45,7 @@ class Bootstrap {
     for (final coreModule in _coreModuleList) {
       add(coreModule);
     }
-    init();
+    return init();
   }
 
   Future<void> initUnfinished() async {
@@ -53,7 +54,7 @@ class Bootstrap {
         add(coreModule);
       }
     }
-    init();
+    return init();
   }
 }
 
@@ -81,6 +82,7 @@ abstract class ManagerBootstrap<T> extends BootstrapImpl {
     clearData();
     final webApiResult = await webApiRequest;
     isInit = initWithWebApiResult(webApiResult);
+    return super.init();
   }
 
   /// Initialize the data structure with [WebApiResult] instance

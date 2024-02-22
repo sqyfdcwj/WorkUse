@@ -282,6 +282,15 @@ create table apps.flutter_dataset_field_layout
     hide_on_empty boolean default true,
 
     /* See table [apps.flutter_text_style] */
-    caption_text_style_id integer
+    caption_text_style_id integer,
+
+    /* Possible values: start, end, center, spaceBetween, spaceAround, spaceEvenly */
+    main_axis_alignment varchar(15),
+
+    /* Possible values: start, end, center, stretch, baseline */
+    cross_axis_alignment varchar(10),
+
+    /* Possible values: alphabetic, ideographic */
+    text_baseline varchar(15)
 );
 
