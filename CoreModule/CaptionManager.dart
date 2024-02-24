@@ -15,6 +15,7 @@ enum CaptionLanguage with EnumUniqueNameMixin {
 
   ;
 
+  @override
   final String displayName;
   const CaptionLanguage(this.displayName);
 }

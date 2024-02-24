@@ -1,31 +1,13 @@
 
-library dialog;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
-part 'DialogUtil_Android.dart';
-part 'DialogUtil_iOS.dart';
-
 enum DlgType { success, fail, alert, confirm, }
 
-final dlg2 = isAndroid ? DialogUtilAndroid() : DialogUtilIOS();
 final dlg = DialogUtil();
 
-abstract class Dlg {
-
-  Future<bool?> showYesNo({
-    String unYes = "",
-    String unNo = "",
-  });
-}
-
-abstract class DlgMixin implements Dlg {
-
-}
-
-
+/// Merge code into this class
 class DialogUtil {
 
   DialogUtil._();
@@ -75,61 +57,61 @@ class DialogUtil {
 
   Radius _radius = const Radius.circular(5);
 
-  Future<bool?> show(DlgType dlgType, {
-    Color iconColor = Colors.white,
-    IconData? titleIcon,
-    String? title,
-    TextStyle? styTitle,
-    double? iconSize,
-    Color? contentColor,
-    Color actionColor = Colors.white,
-    double? radius,
-    bool isShowDialogIcon = false,
-    String? confirmText,
-    String? cancelText,
-    String? returnText,
-    List<Widget> content = const [],
-    EdgeInsets titlePadding = const EdgeInsets.all(20),
-    EdgeInsets contentPadding = const EdgeInsets.all(10),
-  }) async {
-    if (currentPlatform == TargetPlatform.iOS) {
-      return _showIos(dlgType,
-        iconColor: iconColor,
-        titleIcon: titleIcon,
-        title: title,
-        styTitle: styTitle,
-        iconSize: iconSize,
-        contentColor: contentColor,
-        actionColor: actionColor,
-        radius: radius,
-        isShowDialogIcon: isShowDialogIcon,
-        confirmText: confirmText,
-        cancelText: cancelText,
-        returnText: returnText,
-        content: content,
-        titlePadding: titlePadding,
-        contentPadding: contentPadding,
-      );
-    } else {
-      return _showAndroid(dlgType,
-        iconColor: iconColor,
-        titleIcon: titleIcon,
-        title: title,
-        styTitle: styTitle,
-        iconSize: iconSize,
-        contentColor: contentColor,
-        actionColor: actionColor,
-        radius: radius,
-        isShowDialogIcon: isShowDialogIcon,
-        confirmText: confirmText,
-        cancelText: cancelText,
-        returnText: returnText,
-        content: content,
-        titlePadding: titlePadding,
-        contentPadding: contentPadding,
-      );
-    }
-  }
+  // Future<bool?> show(DlgType dlgType, {
+  //   Color iconColor = Colors.white,
+  //   IconData? titleIcon,
+  //   String? title,
+  //   TextStyle? styTitle,
+  //   double? iconSize,
+  //   Color? contentColor,
+  //   Color actionColor = Colors.white,
+  //   double? radius,
+  //   bool isShowDialogIcon = false,
+  //   String? confirmText,
+  //   String? cancelText,
+  //   String? returnText,
+  //   List<Widget> content = const [],
+  //   EdgeInsets titlePadding = const EdgeInsets.all(20),
+  //   EdgeInsets contentPadding = const EdgeInsets.all(10),
+  // }) async {
+  //   if (currentPlatform == TargetPlatform.iOS) {
+  //     return _showIos(dlgType,
+  //       iconColor: iconColor,
+  //       titleIcon: titleIcon,
+  //       title: title,
+  //       styTitle: styTitle,
+  //       iconSize: iconSize,
+  //       contentColor: contentColor,
+  //       actionColor: actionColor,
+  //       radius: radius,
+  //       isShowDialogIcon: isShowDialogIcon,
+  //       confirmText: confirmText,
+  //       cancelText: cancelText,
+  //       returnText: returnText,
+  //       content: content,
+  //       titlePadding: titlePadding,
+  //       contentPadding: contentPadding,
+  //     );
+  //   } else {
+  //     return _showAndroid(dlgType,
+  //       iconColor: iconColor,
+  //       titleIcon: titleIcon,
+  //       title: title,
+  //       styTitle: styTitle,
+  //       iconSize: iconSize,
+  //       contentColor: contentColor,
+  //       actionColor: actionColor,
+  //       radius: radius,
+  //       isShowDialogIcon: isShowDialogIcon,
+  //       confirmText: confirmText,
+  //       cancelText: cancelText,
+  //       returnText: returnText,
+  //       content: content,
+  //       titlePadding: titlePadding,
+  //       contentPadding: contentPadding,
+  //     );
+  //   }
+  // }
 
   Future<bool?> _showAndroid(DlgType dlgType, {
     Color iconColor = Colors.white,
@@ -307,46 +289,277 @@ class DialogUtil {
     );
   }
 
-  Future<T?> showGeneral<T>({
-    required Widget child,
-    bool barrierDismissible = false,
-    EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 75, vertical: 50)
-  }) {
-    return showGeneralDialog<T>(
-      context: rootNavigatorContext,
-      barrierColor: Colors.black.withOpacity(0.5),
-      barrierDismissible: barrierDismissible,
-      barrierLabel: "",
-      transitionDuration: const Duration(milliseconds: 250),
-      transitionBuilder: (_, anim, __, child) => SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 1),
-          end: const Offset(0, 0)
-        ).animate(CurvedAnimation(parent: anim, curve: Curves.easeIn)),
-        child: child,
-      ),
-      pageBuilder: (_, __, ___) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: insetPadding,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: child,
-      )
-    );
-  }
+  // Future<T?> showGeneral<T>({
+  //   required Widget child,
+  //   bool barrierDismissible = false,
+  //   EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 75, vertical: 50)
+  // }) {
+  //   return showGeneralDialog<T>(
+  //     context: rootNavigatorContext,
+  //     barrierColor: Colors.black.withOpacity(0.5),
+  //     barrierDismissible: barrierDismissible,
+  //     barrierLabel: "",
+  //     transitionDuration: const Duration(milliseconds: 250),
+  //     transitionBuilder: (_, anim, __, child) => SlideTransition(
+  //       position: Tween<Offset>(
+  //         begin: const Offset(0, 1),
+  //         end: const Offset(0, 0)
+  //       ).animate(CurvedAnimation(parent: anim, curve: Curves.easeIn)),
+  //       child: child,
+  //     ),
+  //     pageBuilder: (_, __, ___) => Dialog(
+  //       backgroundColor: Colors.white,
+  //       insetPadding: insetPadding,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //       child: child,
+  //     )
+  //   );
+  // }
 
   /// If the webApiResult is not success, show dialog and return false
   /// So the method invoked this method could return
-  bool dlgWithWebApiResult(WebApiResult webApiResult) {
+  Future<bool> handleWebApiResult(WebApiResult webApiResult) async {
     if (webApiResult.isConnectTimeout) {
-      dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiConnTimeout") ?? "Connection timeout");
+      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiConnTimeout") ?? "Connection timeout");
+      await dlg.dialogConfirm(
+        title: const CaptionField(uniqueName: "dlgWebApiConnTimeout", defaultValue: "Connection timeout")
+      );
       return false;
     } else if (webApiResult.isReceiveTimeout) {
-      dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiRecvTimeout") ?? "Receive timeout");
+      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiRecvTimeout") ?? "Receive timeout");
+      await dlg.dialogConfirm(
+        title: const CaptionField(uniqueName: "dlgWebApiRecvTimeout", defaultValue: "Receive timeout")
+      );
       return false;
     } else if (webApiResult.isError) {
-      dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiError") ?? "Error");
+      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiError") ?? "Error");
+      await dlg.dialogConfirm(
+        title: const CaptionField(uniqueName: "dlgWebApiError", defaultValue: "Error")
+      );
       return false;
     }
     return true;
+  }
+
+  /* The code after this comment block is added on 20240203
+   * The code before this comment block is treated as obsolete should be deprecated
+   **/
+
+  final defaultBackgroundColor = Colors.white;
+  final defaultBorderRadius = 20.0;
+  final defaultInsetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0);
+
+  Future<T?> dialog<T>({
+    required WidgetBuilder builder,
+    bool barrierDismissible = true,
+    Color? barrierColor = Colors.black54,
+    String? barrierLabel,
+    bool useSafeArea = true,
+    bool useRootNavigator = true,
+    RouteSettings? routeSettings,
+    Offset? anchorPoint,
+  }) async {
+    final result = await showDialog(
+      context: rootNavigatorContext,
+      builder: builder,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      useSafeArea: useSafeArea,
+      useRootNavigator: useRootNavigator,
+      routeSettings: routeSettings,
+      anchorPoint: anchorPoint
+    );
+    return result;
+  }
+
+  Future<bool?> dialogYesNo({
+    bool barrierDismissible = true,
+    Color? barrierColor = Colors.black54,
+    String? barrierLabel,
+    bool useSafeArea = true,
+    bool useRootNavigator = true,
+    RouteSettings? routeSettings,
+    Offset? anchorPoint,
+    Widget title = const SizedBox(),
+    Widget content = const SizedBox(),
+    String unYes = "lblDialogYes",  // Unique name of Approve button caption
+    String styNameYes = "",
+    String unNo = "lblDialogNo",   // Unique name of Veto button caption
+    String styNameNo = "",
+  }) async {
+    final styYes = styNameYes.isEmpty ? null : tsMgr.get(styNameYes);
+    final styNo = styNameNo.isEmpty ? null : tsMgr.get(styNameNo);
+    return dialog(
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: title,
+          content: content,
+          actions: [
+            CupertinoDialogAction(
+              child: CaptionField(
+                uniqueName: unYes,
+                defaultValue: "YES",
+                defaultTextStyle: styYes,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: CaptionField(
+                uniqueName: unNo,
+                defaultValue: "NO",
+                defaultTextStyle: styNo,
+              ),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+          ]
+        );
+      },
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      useSafeArea: useSafeArea,
+      useRootNavigator: useRootNavigator,
+      routeSettings: routeSettings,
+      anchorPoint: anchorPoint
+    );
+  }
+
+  Future<bool?> dialogConfirm({
+    bool barrierDismissible = true,
+    Color? barrierColor = Colors.black54,
+    String? barrierLabel,
+    bool useSafeArea = true,
+    bool useRootNavigator = true,
+    RouteSettings? routeSettings,
+    Offset? anchorPoint,
+    Widget title = const SizedBox(),
+    Widget content = const SizedBox(),
+    String unOK = "lblDialogOK",  // Unique name of [OK] button caption
+    String styNameOK = "",  // Text style name of [OK] button caption
+  }) async {
+    final styOK = styNameOK.isEmpty ? null : tsMgr.get(styNameOK);
+    return dialog(
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: title,
+          content: content,
+          actions: [
+            CupertinoDialogAction(
+              child: CaptionField(
+                uniqueName: unOK,
+                defaultValue: "OK",
+                defaultTextStyle: styOK,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+            )
+          ]
+        );
+      },
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      useSafeArea: useSafeArea,
+      useRootNavigator: useRootNavigator,
+      routeSettings: routeSettings,
+      anchorPoint: anchorPoint
+    );
+  }
+
+  Future<T?> generalDialog<T>({
+    required RoutePageBuilder pageBuilder,
+    bool barrierDismissible = false,
+    String? barrierLabel,
+    Color barrierColor = const Color(0x80000000),
+    Duration transitionDuration = const Duration(milliseconds: 200),
+    RouteTransitionsBuilder? transitionBuilder,
+    bool useRootNavigator = true,
+    RouteSettings? routeSettings,
+    Offset? anchorPoint,
+  }) async {
+    final result = await showGeneralDialog<T>(
+      context: rootNavigatorContext,
+      pageBuilder: pageBuilder,
+      barrierDismissible: barrierDismissible,
+      barrierLabel: barrierLabel,
+      barrierColor: barrierColor,
+      transitionDuration: transitionDuration,
+      transitionBuilder: transitionBuilder,
+      useRootNavigator: useRootNavigator,
+      routeSettings: routeSettings,
+      anchorPoint: anchorPoint,
+    );
+    return result;
+  }
+
+  Future<T?> modalBottomSheet<T>({
+    required WidgetBuilder builder,
+    double? elevation,
+    Color? backgroundColor,
+
+    Clip? clipBehavior,
+    ShapeBorder? shape,
+    BoxConstraints? constraints,
+    Color? barrierColor,
+
+    bool isScrollControlled = false,
+    bool useRootNavigator = false,
+    bool isDismissible = true,
+    bool enableDrag = true,
+
+    RouteSettings? routeSettings,
+    AnimationController? transitionAnimationController,
+    Offset? anchorPoint,
+  }) async {
+    final result = await showModalBottomSheet(
+      context: rootNavigatorContext,
+      builder: builder,
+      elevation: elevation,
+      backgroundColor: backgroundColor,
+
+      clipBehavior: clipBehavior,
+      shape: shape,
+      constraints: constraints,
+      barrierColor: barrierColor,
+
+      isScrollControlled: isScrollControlled,
+      useRootNavigator: useRootNavigator,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+
+      routeSettings: routeSettings,
+      transitionAnimationController: transitionAnimationController,
+      anchorPoint: anchorPoint,
+    );
+    return result;
+  }
+
+  final offsetTweenN = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero);
+  final offsetTweenS = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
+  final offsetTweenE = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero);
+  final offsetTweenW = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
+
+  RouteTransitionsBuilder getRouteTransitionsBuilder(Tween<Offset> tween, Curve curve) {
+    return (_, anim, __, child) => SlideTransition(
+      position: tween.animate(CurvedAnimation(parent: anim, curve: curve)),
+      child: child,
+    );
+  }
+
+  RoutePageBuilder getRoutePageBuilderWithConfig(
+    String dynamicWidgetConfigName,
+    String dialogBorderRadiusConfigName,
+    Widget child,
+  ) {
+    final cfg = dwMgr.get(dynamicWidgetConfigName);
+    final rad = acMgr.getDouble(dialogBorderRadiusConfigName)
+      ?? defaultBorderRadius;
+    return (_, __, ___) => Dialog(
+      backgroundColor: cfg?.color ?? defaultBackgroundColor,
+      insetPadding: cfg?.padding ?? defaultInsetPadding,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(rad)),
+      child: child,
+    );
   }
 }
