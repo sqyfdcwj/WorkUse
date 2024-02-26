@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'Export.dart';
 
-class DataSetFieldLayoutManager extends ManagerBootstrapMap<DataSetFieldLayout> {
+class DataSetFieldLayoutManager extends SingleTypeManagerBootstrap<DataSetFieldLayout>
+  with SingleTypeManagerBootstrapMapMixin<DataSetFieldLayout> {
 
   DataSetFieldLayoutManager._();
   static final _instance = DataSetFieldLayoutManager._();
@@ -19,6 +20,10 @@ class DataSetFieldLayoutManager extends ManagerBootstrapMap<DataSetFieldLayout> 
     captionTextStyle: null,
     contentTextStyle: null,
   );
+
+  @override final String sourceFieldName = "dataset_field_layout_list";
+  @override final String uniqueField = "unique_name";
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDatasetFieldLayout);
 
   @override
   DataSetFieldLayout getFromMap(Map<String, String> map) {
@@ -41,16 +46,7 @@ class DataSetFieldLayoutManager extends ManagerBootstrapMap<DataSetFieldLayout> 
     );
   }
 
-  @override final String sourceFieldName = "dataset_field_layout_list";
-  @override final String uniqueField = "unique_name";
 
-  @override
-  Future<WebApiResult> get webApiRequest {
-    return webApi.postSingle(
-      sqlGroupName: SqlGroupName.getDatasetFieldLayout,
-      param: {}
-    );
-  }
 }
 
 class DataSetFieldLayout {

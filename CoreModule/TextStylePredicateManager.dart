@@ -4,7 +4,8 @@ import 'Export.dart';
 
 final tspMgr = TextStylePredicateManager();
 
-class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> {
+class TextStylePredicateManager extends SingleTypeManagerBootstrap<TextStylePredicate>
+  with SingleTypeManagerBootstrapMapMixin<TextStylePredicate> {
 
   TextStylePredicateManager._();
   static final _instance = TextStylePredicateManager._();
@@ -18,16 +19,9 @@ class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> 
     compareValue: "",
     textStyle: TextStyleManager().defaultValue,
   );
-
   @override final String sourceFieldName = "text_style_predicate_list";
   @override final String uniqueField = "";
-
-  @override get webApiRequest {
-    return webApi.postSingle(
-      sqlGroupName: SqlGroupName.getTextStylePredicate,
-      param: {},
-    );
-  }
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getTextStylePredicate);
 
   /// Key: combined_name (sql_group_name + '_' + sql_display_name)
   /// Val: sql_name
@@ -35,9 +29,7 @@ class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> 
 
   @override
   bool initWithWebApiResult(WebApiResult webApiResult) {
-    if (!webApiResult.isSuccess) {
-      return false;
-    }
+    if (!super.initWithWebApiResult(webApiResult)) { return false; }
     // Initialized predicate data
     final list = webApiResult.asListStringMap(fieldName: sourceFieldName);
     final uniqueNameSet = <String>{};
@@ -74,12 +66,6 @@ class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> 
     return true;
   }
 
-  void _printData(TextStylePredicate? curr) {
-    while (curr != null) {
-      curr = curr._next;
-    }
-  }
-
   @override
   TextStylePredicate getFromMap(Map<String, String> map) {
     return TextStylePredicate(
@@ -87,7 +73,7 @@ class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> 
       predicateOrder: int.tryParse(map["predicate_order"] ?? "0") ?? 0,
       method: map["method"] ?? "",
       compareValue: map["compare_value"] ?? "",
-      textStyle: TextStyleManager().getFromMap(map),
+      textStyle: tsMgr.getFromMap(map),
     );
   }
 
@@ -114,6 +100,7 @@ class TextStylePredicateManager extends ManagerBootstrapMap<TextStylePredicate> 
   }
 }
 
+/// Represented in linked-list
 class TextStylePredicate {
 
   final String uniqueName;

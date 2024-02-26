@@ -8,23 +8,17 @@ part 'AppConfigManager_var.dart';
 final acMgr = AppConfigManager();
 
 /// Value configs downloaded from database
-class AppConfigManager extends ManagerBootstrapMap<AppConfig> {
+class AppConfigManager extends SingleTypeManagerBootstrap<AppConfig>
+  with SingleTypeManagerBootstrapMapMixin<AppConfig> {
 
   AppConfigManager._();
   static final _instance = AppConfigManager._();
   factory AppConfigManager() => _instance;
 
-  @override
-  Future<WebApiResult> get webApiRequest {
-    return WebApi().postSingle(
-      sqlGroupName: SqlGroupName.getAppConfig,
-      param: {}
-    );
-  }
-
   @override AppConfig defaultValue = AppConfig(null, null, null, null);
   @override String get sourceFieldName => "app_config_list";
   @override String get uniqueField => "variable_name";
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getAppConfig);
 
   int? getInt(String name) => get(name)?._intVal;
   String? getString(String name) => get(name)?._strVal;

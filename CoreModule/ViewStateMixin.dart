@@ -39,7 +39,7 @@ mixin ViewStateMixin<T extends StatefulWidget> on State<T> {
   };
 
   Widget get widgetCurrentState {
-    log("current state = ${viewState.toString()}");
+    // log("current state = ${viewState.toString()}");
     return _mapWidget[viewState]!.call();
   }
 }

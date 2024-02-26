@@ -20,7 +20,8 @@ enum CaptionLanguage with EnumUniqueNameMixin {
   const CaptionLanguage(this.displayName);
 }
 
-class CaptionManager extends ManagerBootstrapMap<CaptionData> {
+class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
+  with SingleTypeManagerBootstrapMapMixin<CaptionData> {
 
   CaptionManager._();
   static final _instance = CaptionManager._();
@@ -28,20 +29,19 @@ class CaptionManager extends ManagerBootstrapMap<CaptionData> {
 
   final curLang = ValueNotifier<CaptionLanguage>(CaptionLanguage.en);
 
-  @override final CaptionData defaultValue = CaptionData(
-    uniqueName: "",
-    en: "",
-    zhCN: "",
-    zhTW: "",
-  );
-
+  @override final CaptionData defaultValue = CaptionData(uniqueName: "", en: "", zhCN: "", zhTW: "");
+  @override final String sourceFieldName = "caption_list";
+  @override final String uniqueField = "unique_name";
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getCaption);
 
   @override
-  Future<void> init() async {
-    clearData();
-    await initFromLocal();
-    final webApiResult = await webApiRequest;
-    isInit = initWithWebApiResult(webApiResult);
+  CaptionData getFromMap(Map<String, String> map) {
+    return CaptionData(
+      uniqueName: map["unique_name"] ?? "",
+      en: map["en"],
+      zhCN: map["zh_cn"],
+      zhTW: map["zh_tw"],
+    );
   }
 
   @override
@@ -70,27 +70,6 @@ class CaptionManager extends ManagerBootstrapMap<CaptionData> {
 
   String? getCaption(String uniqueName, { CaptionLanguage? lang }) {
     return dataMap[uniqueName]?[lang ?? curLang.value];;
-  }
-
-  @override
-  CaptionData getFromMap(Map<String, String> map) {
-    return CaptionData(
-      uniqueName: map["unique_name"] ?? "",
-      en: map["en"],
-      zhCN: map["zh_cn"],
-      zhTW: map["zh_tw"],
-    );
-  }
-
-  @override final String sourceFieldName = "caption_list";
-  @override final String uniqueField = "unique_name";
-  @override get webApiRequest {
-    return webApi.postSingle(
-      sqlGroupName: SqlGroupName.getCaption,
-      param: {
-        "sql_group_version": WebApiEndpoint.appVersion,
-      },
-    );
   }
 }
 

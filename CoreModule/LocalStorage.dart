@@ -16,7 +16,7 @@ class UserCredential {
   UserCredential(this.login, this.password, bool autoLogin)
     : vnAutoLogin = ValueNotifier(autoLogin);
 
-  void save() => LocalStorage()._saveUserCredential(this);
+  Future<void> save() => LocalStorage()._saveUserCredential(this);
 
   void onAutoLoginChanged(bool newValue) {
     autoLogin = newValue;
@@ -41,10 +41,10 @@ class LocalStorage extends BootstrapImpl {
   String get prefix => _packageInfo.packageName;
 
   @override
-  Future<void> init() async {
+  Future<bool> init() async {
     _packageInfo = await PackageInfo.fromPlatform();
     _pf = await SharedPreferences.getInstance();
-    isInit = true;
+    return true;
   }
 
   Future<UserCredential> _readUserCredential() async {

@@ -1,6 +1,9 @@
 
 part of text_style_manager;
 
+late final poListCellFocusedColor = tsMgr.getColor("POListCell.focused");
+late final poListCellUnFocusedColor = tsMgr.getColor("POListCell.unfocused");
+
 late final cellFocusedColor = tsMgr.getColor("dtl_cell.focused");
 late final cellUnfocusedColor = tsMgr.getColor("dtl_cell.unfocused");
 

@@ -6,30 +6,27 @@ import 'Export.dart';
 
 part 'TextStyleManager_var.dart';
 
-/// The textStyleManager also serves as ColorManager
 final tsMgr = TextStyleManager();
 
-class TextStyleManager extends ManagerBootstrapMap<TextStyle> {
+/// Provides TextStyle and Color configuraion
+class TextStyleManager extends SingleTypeManagerBootstrap<TextStyle>
+  with SingleTypeManagerBootstrapMapMixin<TextStyle> {
 
   TextStyleManager._();
   static final _instance = TextStyleManager._();
   factory TextStyleManager() => _instance;
 
   @override
-  TextStyle get defaultValue => const TextStyle(
+  TextStyle defaultValue = const TextStyle(
     fontSize: 14,
     color: Colors.black,
     fontWeight: FontWeight.normal,
     fontStyle: FontStyle.normal,
     decoration: TextDecoration.none,
   );
-
   @override final String sourceFieldName = "text_style_list";
   @override final String uniqueField = "style_name";
-  @override get webApiRequest => webApi.postSingle(
-    sqlGroupName: SqlGroupName.getTextStyle,
-    param: {}
-  );
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getTextStyle);
 
   @override
   TextStyle getFromMap(Map<String, String> map) {

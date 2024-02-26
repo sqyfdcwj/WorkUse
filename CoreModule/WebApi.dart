@@ -44,7 +44,7 @@ class WebApi {
 
   Future<WebApiResult> postSingle({
     required SqlGroupName sqlGroupName,
-    required Map<String, dynamic> param,
+    Map<String, dynamic> param = const <String, dynamic>{},
   }) async {
     return postMulti(
       endpoint: WebApiEndpoint.sqlInterface,
@@ -56,7 +56,7 @@ class WebApi {
     required String endpoint,
     Map<SqlGroupName, List< Map<String, dynamic> > > param = const {},
   }) async {
-    log("WebApi::postMulti, endpoint = $endpoint");
+    // log("WebApi::postMulti, endpoint = $endpoint");
     try {
       final Response<String> response = await _dio.post(
         endpoint,
@@ -66,7 +66,7 @@ class WebApi {
             param.entries.map((entry) {
               return MapEntry(
                 entry.key.capitalizedName,
-                entry.value.map((map) => map..addAll(webApiRequest)).toList()
+                entry.value.map((map) => Map<String, dynamic>.from(map)..addAll(webApiRequest)).toList()
               );
             })
           )

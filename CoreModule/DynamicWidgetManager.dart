@@ -4,7 +4,8 @@ import 'Export.dart';
 
 final dwMgr = DynamicWidgetManager();
 
-class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
+class DynamicWidgetManager extends SingleTypeManagerBootstrap<DynamicWidgetData>
+  with SingleTypeManagerBootstrapMapMixin<DynamicWidgetData> {
 
   DynamicWidgetManager._();
   static final _instance = DynamicWidgetManager._();
@@ -26,12 +27,7 @@ class DynamicWidgetManager extends ManagerBootstrapMap<DynamicWidgetData> {
 
   @override final String sourceFieldName = "dynamic_widget_list";
   @override final String uniqueField = "config_name";
-  @override get webApiRequest {
-    return WebApi().postSingle(
-      sqlGroupName: SqlGroupName.getDynamicWidget,
-      param: {}
-    );
-  }
+  @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDynamicWidget);
 
   @override
   bool initWithWebApiResult(WebApiResult webApiResult) {
