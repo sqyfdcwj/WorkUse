@@ -1,11 +1,9 @@
 
 enum SqlGroupName {
 
-  // SqlGroupName for modules
-
+  // Services
   getAppConfig,
   getCaption,
-  // getColor,
   getDatasetFieldLayout,
   getDataSource,
   getDynamicWidget,

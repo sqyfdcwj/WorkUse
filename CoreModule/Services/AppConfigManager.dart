@@ -1,9 +1,5 @@
 
-library app_config_manager;
-
-import 'Export.dart';
-
-part 'AppConfigManager_var.dart';
+import '../Export.dart';
 
 final acMgr = AppConfigManager();
 
@@ -62,9 +58,9 @@ class ExpansionTileConfig {
 
   ExpansionTileConfig._(String name):
     initiallyExpanded = acMgr.getBool("ExpansionTile_initiallyExpanded.$name")
-      ?? _expansionTileInitiallyExpanded ?? false,
+      ?? expansionTileInitiallyExpanded ?? false,
     maintainState = acMgr.getBool("ExpansionTile_maintainState.$name")
-      ?? _expansionTileMaintainState ?? false;
+      ?? expansionTileMaintainState ?? false;
 
   @override
   String toString() {

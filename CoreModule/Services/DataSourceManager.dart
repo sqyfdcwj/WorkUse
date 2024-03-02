@@ -1,5 +1,7 @@
 
-import 'Export.dart';
+import '../Export.dart';
+
+final dsMgr = DataSourceManager();
 
 class DataSourceManager extends ManagerBootstrap {
 
@@ -26,7 +28,7 @@ class DataSourceManager extends ManagerBootstrap {
     _companyList.addAll(list);
     _companyList.retainWhere((map) => _companyIdSet.add(map["company_id"] ?? ""));
     if (_companyList.isNotEmpty) {
-      Global().curCompany.value = _companyList.first;
+      global.curCompany.value = _companyList.first;
     }
     return true;
   }

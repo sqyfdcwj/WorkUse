@@ -1,7 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'Export.dart';
+import '../Export.dart';
 
 enum DlgType { success, fail, alert, confirm, }
 
@@ -318,7 +318,7 @@ class DialogUtil {
 
   /// If the webApiResult is not success, show dialog and return false
   /// So the method invoked this method could return
-  Future<bool> handleWebApiResult(WebApiResult webApiResult) async {
+  Future<bool> handleWebApiResultOnFail(WebApiResult webApiResult) async {
     if (webApiResult.isConnectTimeout) {
       // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiConnTimeout") ?? "Connection timeout");
       await dlg.dialogConfirm(
@@ -338,6 +338,13 @@ class DialogUtil {
       );
       return false;
     }
+    return true;
+  }
+
+  Future<bool> handleDataSourceEmpty() async {
+    await dlg.dialogConfirm(
+      title: const CaptionField(uniqueName: "dlgNoRecord", defaultValue: "No record")
+    );
     return true;
   }
 
@@ -535,10 +542,10 @@ class DialogUtil {
     return result;
   }
 
-  final offsetTweenN = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero);
-  final offsetTweenS = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
+  final offsetTweenN = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
+  final offsetTweenS = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
   final offsetTweenE = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero);
-  final offsetTweenW = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
+  final offsetTweenW = Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero);
 
   RouteTransitionsBuilder getRouteTransitionsBuilder(Tween<Offset> tween, Curve curve) {
     return (_, anim, __, child) => SlideTransition(

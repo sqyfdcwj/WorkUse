@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'EnumMixin.dart';
+import 'Export.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 BuildContext get rootNavigatorContext => rootNavigatorKey.currentContext!;
@@ -30,30 +30,40 @@ final global = Global();
 
 class Global {
 
-  Global._();
+  Global._() {
+    curCompany.addListener(() {
+      webApi.setRequestAdditionalInfo("company_id", curCompanyId);
+    });
+  }
   static final _instance = Global._();
   factory Global() => _instance;
 
-  String get userId => _curUser["user_id"] ?? "";
-  String get username => _curUser["username"] ?? "";
-  String get userLv => _curUser["user_lv"] ?? "";
-  String get staffId => _curUser["staff_id"] ?? "";
-
+  bool _isLogin = false;
   final Map<String, String> _curUser = {};
-  set curUser(Map<String, String> map) {
-    for (final entry in map.entries) {
-      _curUser[entry.key] = entry.value;
-    }
-  }
-  //
-  // void setUserImage({ required Map<String, String> map }) {
-  //   for (final entry in map.entries) {
-  //     _curUser[entry.key] = entry.value;
-  //   }
-  // }
+  String get username => _curUser["username"] ?? "";
 
   final ValueNotifier<Map<String, String>?> curCompany = ValueNotifier(null);
   final ValueNotifier<Module> curModule = ValueNotifier(Module.checkPO);
 
   String get curCompanyId => curCompany.value?["company_id"] ?? "0";
+
+  void login(Map<String, String> user) {
+    if (_isLogin) {
+      return;
+    }
+    _curUser.keys.forEach(webApi.unsetRequestAdditionalInfo);
+    _curUser.addAll(user);
+    for (var kv in _curUser.entries) {
+      webApi.setRequestAdditionalInfo(kv.key, kv.value);
+    }
+    _isLogin = true;
+  }
+
+  void logout() {
+    if (!_isLogin) {
+      return;
+    }
+    _curUser.keys.forEach(webApi.unsetRequestAdditionalInfo);
+    _isLogin = false;
+  }
 }

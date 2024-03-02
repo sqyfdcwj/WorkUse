@@ -1,10 +1,6 @@
 
-library text_style_manager;
-
 import 'package:flutter/material.dart';
-import 'Export.dart';
-
-part 'TextStyleManager_var.dart';
+import '../Export.dart';
 
 final tsMgr = TextStyleManager();
 

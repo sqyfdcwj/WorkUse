@@ -6,7 +6,7 @@ enum ViewState {
   init,
   downloading,
   success,
-  failure,
+  fail,
 }
 
 mixin ViewStateMixin<T extends StatefulWidget> on State<T> {
@@ -29,17 +29,16 @@ mixin ViewStateMixin<T extends StatefulWidget> on State<T> {
   Widget widgetOnInit() => Container();
   Widget widgetOnDownloading() => Container();
   Widget widgetOnSuccess() => Container();
-  Widget widgetOnFailure() => Container();
+  Widget widgetOnFail() => Container();
 
   late final Map<ViewState, Widget Function()> _mapWidget = {
     ViewState.init: widgetOnInit,
     ViewState.downloading: widgetOnDownloading,
     ViewState.success: widgetOnSuccess,
-    ViewState.failure: widgetOnFailure,
+    ViewState.fail: widgetOnFail,
   };
 
   Widget get widgetCurrentState {
-    // log("current state = ${viewState.toString()}");
     return _mapWidget[viewState]!.call();
   }
 }

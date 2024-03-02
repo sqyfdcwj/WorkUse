@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'Export.dart';
+import '../Export.dart';
 
 final captMgr = CaptionManager();
 

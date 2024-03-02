@@ -8,22 +8,56 @@ final webApi = WebApi();
 
 class WebApi {
 
-  WebApi._();
+  WebApi._() {
+    setRequestAdditionalInfo("app_version", WebApiEndpoint.appVersion);
+  }
   static final WebApi _instance = WebApi._();
   factory WebApi() => _instance;
   final _dio = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 30),
   ));
 
-  Map<String, String> get webApiRequest {
-    return {
-      "request_user_id": global.userId,
-      "request_username": global.username,
-      "request_user_lv": global.userLv,
-      "request_staff_id": global.staffId,
-      "request_company_id": global.curCompanyId,
-      "request_app_version": WebApiEndpoint.appVersion,
-    };
+  /// An additional body which will be appended to every single row in every entry in WebApi::postMulti.
+  /// Example: Consider a WebApi request to get a list of PO record,
+  /// Before adding additional body
+  /// {
+  ///   "GetUncheckedPOList": [
+  ///     {
+  ///       "row_id":"0",
+  ///       "purchase_no":"",
+  ///       "job_no":"",
+  ///       "purchase_date_from":"",
+  ///       "purchase_date_to":""
+  ///     }
+  ///   ]
+  /// }
+  ///
+  /// After adding this additional body, the param becomes:
+  /// {
+  ///   "GetUncheckedPOList": [
+  ///     {
+  ///       "row_id":"0",
+  ///       "purchase_no":"",
+  ///       "job_no":"",
+  ///       "purchase_date_from":"",
+  ///       "purchase_date_to":"",
+  ///       "request_user_id":"1",
+  ///       "request_username":"ADMIN",
+  ///       "request_user_lv":"99",
+  ///       "request_staff_id":"0",
+  ///       "request_company_id":"1",
+  ///       "request_app_version":"99999999"
+  ///     }
+  ///   ]
+  /// }
+
+  /// Every key starts with prefix "request_"
+  final Map<String, String> _requestAdditionalInfo = {};
+  void setRequestAdditionalInfo(String key, String value) {
+    _requestAdditionalInfo["request_$key"] = value;
+  }
+  void unsetRequestAdditionalInfo(String key) {
+    _requestAdditionalInfo.remove("request_$key");
   }
 
   static WebApiResult _dioErrorHandler(DioException e) {
@@ -56,7 +90,7 @@ class WebApi {
     required String endpoint,
     Map<SqlGroupName, List< Map<String, dynamic> > > param = const {},
   }) async {
-    // log("WebApi::postMulti, endpoint = $endpoint");
+
     try {
       final Response<String> response = await _dio.post(
         endpoint,
@@ -66,7 +100,7 @@ class WebApi {
             param.entries.map((entry) {
               return MapEntry(
                 entry.key.capitalizedName,
-                entry.value.map((map) => Map<String, dynamic>.from(map)..addAll(webApiRequest)).toList()
+                entry.value.map((map) => Map<String, dynamic>.from(map)..addAll(_requestAdditionalInfo)).toList()
               );
             })
           )
@@ -127,73 +161,58 @@ class WebApiResult {
   factory WebApiResult.receiveTimeout(String message) => WebApiResult(code: 504, message: message);
   factory WebApiResult.error(String message) => WebApiResult(code: 500, message: message);
 
-  /// Input dynamic type raw and try cast to a typed map. Return empty map on fail or raw is empty
-  Map<String, List<T>> getMap<T>({
-    required dynamic raw,
-    required T Function(dynamic) toElement
-  }) {
-    if ((raw == null) || (raw is! Map<String, dynamic>)) {
-      log("WebApiResult::getMap guard");
-      return {};
-    }
-    return raw.map((key, list) => MapEntry(key, (list as List).map(toElement).toList()));
-  }
-
-  /// Input dynamic type raw and try cast to a typed array. Return empty array on fail or raw is empty
-  List<T> getList<T>({
-    required dynamic raw,
-    required T Function(dynamic) toElement,
-  }) {
-    if ((raw == null) || (raw is! List)) {
-      log("WebApiResult::getList guard");
-      return [];
-    }
-    return raw.map(toElement).toList();
-  }
-
-  T? getField<T>({
-    required String fieldName,
-    T? Function(dynamic)? toElement,
-  }) {
-    toElement ??= defaultToElement;
-    return toElement(body[fieldName]);
-  }
-
-  T? defaultToElement<T>(dynamic raw) => raw as T;
-
   Map<String, List<T>> asMapList<T>({
     required String fieldName,
-    required T Function(dynamic) toElement
-  }) => getMap(raw: body[fieldName], toElement: toElement);
+    required T Function(dynamic) toElement,
+  }) {
+    final raw = body[fieldName];
+    return (raw == null) || (raw is! Map<String, List>)
+      ? Map<String, List<T>>.identity()
+      : raw.map((key, list) => MapEntry(key, list.map(toElement).toList()));
+  }
 
   List<T> asList<T>({
     required String fieldName,
-    required T Function(dynamic) toElement
-  }) => getList(raw: body[fieldName], toElement: toElement);
+    required T Function(dynamic) toElement,
+  }) {
+    final raw = body[fieldName];
+    return (raw == null) || (raw is! List)
+      ? List<T>.empty()
+      : raw.map(toElement).toList();
+  }
+
+  T asType<T>({
+    required String fieldName,
+    required T Function(dynamic) toElement,
+  }) {
+    return toElement(body[fieldName]);
+  }
 
   Map<String, List< Map<String, String> > > asMapListStringMap({ required String fieldName }) {
-    try {
-      Map<String, List> tmpMap = Map<String, List>.from(body[fieldName]);
-      return tmpMap.map((k, v) => MapEntry(k, v.map((e) => Map<String, String>.from(e)).toList()));
-    } catch (_) {
-      return {};
-    }
+    return asMapList(fieldName: fieldName, toElement: (e) => Map<String, String>.from(e));
+    // try {
+    //   Map<String, List> tmpMap = Map<String, List>.from(body[fieldName]);
+    //   return tmpMap.map((k, v) => MapEntry(k, v.map((e) => Map<String, String>.from(e)).toList()));
+    // } catch (_) {
+    //   return {};
+    // }
   }
 
   List< Map<String, String> > asListStringMap({ required String fieldName }) {
-    try {
-      return List.from(body[fieldName]).map((e) => Map<String, String>.from(e)).toList();
-    } catch (_) {
-      return [];
-    }
+    return asList(fieldName: fieldName, toElement: (e) => Map<String, String>.from(e));
+    // try {
+    //   return List.from(body[fieldName]).map((e) => Map<String, String>.from(e)).toList();
+    // } catch (_) {
+    //   return [];
+    // }
   }
 
-  Map<String, String> single({ required String fieldName }) {
+  Map<String, String> listSingle({ required String fieldName }) {
     final list = asListStringMap(fieldName: fieldName);
     return list.isEmpty ? {} : list.first;
   }
 
-  List<String> getKeyListFromBody({ required String fieldName }) {
+  List<String> getKeyList({ required String fieldName }) {
     try {
       return List<String>.from(body["${fieldName}_keys"]);
     } catch (_) {
@@ -202,7 +221,6 @@ class WebApiResult {
   }
 
   Map<String, List< Map<String, String> > > allListStringMap() {
-
     final arrEntry = body.entries;
     final result = <String, List< Map<String, String> > >{};
     for (final entry in arrEntry) { // MapEntry<String, dynamic>

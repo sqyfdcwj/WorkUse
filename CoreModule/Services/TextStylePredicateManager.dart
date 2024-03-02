@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'Export.dart';
+import '../Export.dart';
 
 final tspMgr = TextStylePredicateManager();
 
