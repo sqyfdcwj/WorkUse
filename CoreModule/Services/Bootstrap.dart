@@ -126,7 +126,7 @@ abstract class SingleTypeManagerBootstrap<T> extends ManagerBootstrap<T> {
 
   T? get(String name);
   T getNonNull(String name) => get(name) ?? defaultValue;
-  T getFromMap(Map<String, String> map);
+  T getFromMap(StringMap map);
 
   String get sourceFieldName;
   String get uniqueField;

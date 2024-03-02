@@ -22,7 +22,7 @@ class AppConfigManager extends SingleTypeManagerBootstrap<AppConfig>
   bool? getBool(String name) => get(name)?._boolVal;
 
   @override
-  AppConfig getFromMap(Map<String, String> map) {
+  AppConfig getFromMap(StringMap map) {
     return AppConfig(
       int.tryParse(map["value"] ?? ""),
       double.tryParse(map["value"] ?? ""),

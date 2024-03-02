@@ -25,7 +25,7 @@ class TextStyleManager extends SingleTypeManagerBootstrap<TextStyle>
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getTextStyle);
 
   @override
-  TextStyle getFromMap(Map<String, String> map) {
+  TextStyle getFromMap(StringMap map) {
     return TextStyle(
       fontSize: double.tryParse(map["font_size"] ?? "14") ?? 14,
       color: DynamicWidgetData.parseColor(map, fieldA: "a", fieldR: "r", fieldG: "g", fieldB: "b"),

@@ -26,7 +26,7 @@ class DataSetFieldLayoutManager extends SingleTypeManagerBootstrap<DataSetFieldL
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDatasetFieldLayout);
 
   @override
-  DataSetFieldLayout getFromMap(Map<String, String> map) {
+  DataSetFieldLayout getFromMap(StringMap map) {
     return DataSetFieldLayout(
       uniqueName: map["unique_name"] ?? "",
       layoutType: int.tryParse(map["layout_type"] ?? "1") ?? 1,

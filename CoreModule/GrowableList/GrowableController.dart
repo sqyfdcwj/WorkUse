@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import '../Export.dart';
 
-typedef StringMapPredicate = bool Function(Map<String, String>);
-typedef UniqueIdProvider = int Function(Map<String, String>);
+typedef StringMapPredicate = bool Function(StringMap);
+typedef UniqueIdProvider = int Function(StringMap);
 
 /// A set of callbacks used by the GrowableController
 class GrowableControllerDelegate {
@@ -200,7 +200,7 @@ abstract class GrowableController<T extends GrowableControllerDelegate> extends 
   bool get isFinished => currentState.value == GrowableControllerState.finished;
 
   /// The record selected by the user currently
-  final ValueNotifier<Map<String, String>?> current = ValueNotifier(null);
+  final ValueNotifier<StringMap?> current = ValueNotifier(null);
 
   @override
   void dispose() {
@@ -232,9 +232,9 @@ abstract class GrowableController<T extends GrowableControllerDelegate> extends 
     }
   }
 
-  Map<String, String>? get firstItem;
+  StringMap? get firstItem;
 
-  Map<String, String>? get lastItem;
+  StringMap? get lastItem;
 
   int get elementCount;
 
@@ -331,24 +331,24 @@ abstract class GrowableController<T extends GrowableControllerDelegate> extends 
   /// because this method involves dataSource manipulation and the dataSource type is unknown in this class.
   void _delete(StringMapPredicate predicate);
 
-  bool isCurrent(Map<String, String>? d) => d != null && current.value == d;
+  bool isCurrent(StringMap? d) => d != null && current.value == d;
 
-  int idProvider(Map<String, String> map) => map[delegate.uniqueName].hashCode;
+  int idProvider(StringMap map) => map[delegate.uniqueName].hashCode;
 }
 
 class GrowableListController<T extends GrowableControllerDelegate> extends GrowableController<T> {
 
   GrowableListController({ required super.delegate, required super.param });
 
-  final List<Map<String, String>> _dataSource = [];
+  final ListStringMap _dataSource = [];
 
   @override get isEmpty => _dataSource.isEmpty;
   @override get firstItem => _dataSource.isNotEmpty ? _dataSource.first : null;
   @override get lastItem => _dataSource.isNotEmpty ? _dataSource.last : null;
   @override get elementCount => _dataSource.length;
 
-  int indexOf(Map<String, String> map) => _dataSource.indexOf(map);
-  Map<String, String> elementAt(int idx) => _dataSource[idx];
+  int indexOf(StringMap map) => _dataSource.indexOf(map);
+  StringMap elementAt(int idx) => _dataSource[idx];
 
   @override
   void clear() {
@@ -356,7 +356,7 @@ class GrowableListController<T extends GrowableControllerDelegate> extends Growa
     super.clear();
   }
 
-  /// Get a List<Map<String, String>> from the [WebApiResult] and add it into _dataSource
+  /// Get a ListStringMap from the [WebApiResult] and add it into _dataSource
   /// Duplicated records will be removed according to the value of field $uniqueName
   /// This method should be override by descendant class if it needs to do extra work with the [WebApiResult]
   @override
@@ -389,7 +389,7 @@ class GrowableMapListController<T extends GrowableControllerDelegate> extends Gr
 
   GrowableMapListController({ required super.delegate, required super.param });
 
-  final Map<String, List<Map<String, String>>> _dataSource = {};
+  final MapListStringMap _dataSource = {};
   @override get isEmpty => _dataSource.isEmpty;
 
   final List<String> _keyList = [];
@@ -397,7 +397,7 @@ class GrowableMapListController<T extends GrowableControllerDelegate> extends Gr
   int get keyCount => _keyList.length;
   String keyAt(int index) => _keyList[index];
   int listLength(String key) => _dataSource[key]?.length ?? 0;
-  Map<String, String> elementAt(String key, int idx) => _dataSource[key]![idx];
+  StringMap elementAt(String key, int idx) => _dataSource[key]![idx];
 
   String? get firstKey => _keyList.isNotEmpty ? _keyList.first : null;
   String? get lastKey => _keyList.isNotEmpty ? _keyList.last : null;
@@ -426,7 +426,7 @@ class GrowableMapListController<T extends GrowableControllerDelegate> extends Gr
     super.clear();
   }
 
-  /// Get a Map<String, List<Map<String, String>>> from the [WebApiResult] and add it into _dataSource
+  /// Get a MapListStringMap from the [WebApiResult] and add it into _dataSource
   /// Duplicated records will be removed according to the value of field $uniqueName
   @override
   void insert(WebApiResult webApiResult) {
@@ -454,12 +454,12 @@ class GrowableMapListController<T extends GrowableControllerDelegate> extends Gr
     _keyList.retainWhere(setKeyHashCode.add);
   }
 
-  void _update(Map<String, List<Map<String, String>>> other, StringMapPredicate predicate) {
+  void _update(MapListStringMap other, StringMapPredicate predicate) {
     if (other.isEmpty) { return; }
     String key = other.keys.first;
-    List<Map<String, String>> list = other[key]!;
+    ListStringMap list = other[key]!;
     if (list.isEmpty) { return; }
-    Map<String, String> model = list.first;
+    StringMap model = list.first;
     int index = _dataSource[key]!.indexWhere(predicate);
     if (index != -1) {
       _dataSource[key]![index] = model;
@@ -468,8 +468,8 @@ class GrowableMapListController<T extends GrowableControllerDelegate> extends Gr
 
   @override
   void _delete(StringMapPredicate predicate) {
-    MapEntry<String, List<Map<String, String>>>? prev, curr, next;
-    Map<String, String>? loc;
+    MapEntry<String, ListStringMap>? prev, curr, next;
+    StringMap? loc;
     final dataSourceEntryLength = _dataSource.entries.length;
     for (int i = 0; i < dataSourceEntryLength; i++) {
       prev = i == 0 ? null : _dataSource.entries.elementAt(i - 1);

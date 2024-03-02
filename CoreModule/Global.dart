@@ -39,15 +39,15 @@ class Global {
   factory Global() => _instance;
 
   bool _isLogin = false;
-  final Map<String, String> _curUser = {};
+  final StringMap _curUser = {};
   String get username => _curUser["username"] ?? "";
 
-  final ValueNotifier<Map<String, String>?> curCompany = ValueNotifier(null);
+  final ValueNotifier<StringMap?> curCompany = ValueNotifier(null);
   final ValueNotifier<Module> curModule = ValueNotifier(Module.checkPO);
 
   String get curCompanyId => curCompany.value?["company_id"] ?? "0";
 
-  void login(Map<String, String> user) {
+  void login(StringMap user) {
     if (_isLogin) {
       return;
     }

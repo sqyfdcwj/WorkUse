@@ -35,7 +35,7 @@ class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getCaption);
 
   @override
-  CaptionData getFromMap(Map<String, String> map) {
+  CaptionData getFromMap(StringMap map) {
     return CaptionData(
       uniqueName: map["unique_name"] ?? "",
       en: map["en"],
@@ -56,7 +56,7 @@ class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
             continue;
           }
           try {
-            dataMap[entry.key] = getFromMap(Map<String, String>.from(entry.value));
+            dataMap[entry.key] = getFromMap(StringMap.from(entry.value));
           } catch (e) { }
         }
       } else {

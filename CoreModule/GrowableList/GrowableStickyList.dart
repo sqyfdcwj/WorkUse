@@ -8,7 +8,7 @@ class GrowableStickyList<T extends GrowableMapListController> extends StatefulWi
   final T controller;
 
   final Widget Function(String) headerBuilder;
-  final Widget Function(Map<String, String>) contentBuilder;
+  final Widget Function(StringMap) contentBuilder;
 
   final bool enableOnReachMin;
   final bool enableOnReachMax;

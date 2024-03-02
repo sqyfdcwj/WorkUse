@@ -10,8 +10,8 @@ class DataSourceManager extends ManagerBootstrap {
   factory DataSourceManager() => _instance;
 
   final Set<String> _companyIdSet = {};
-  final List<Map<String, String>> _companyList = [];
-  Iterable<Map<String, String>> get companyList => _companyList;
+  final ListStringMap _companyList = [];
+  Iterable<StringMap> get companyList => _companyList;
 
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDataSource);
 

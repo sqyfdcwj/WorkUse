@@ -25,7 +25,7 @@ class TextStylePredicateManager extends SingleTypeManagerBootstrap<TextStylePred
 
   /// Key: combined_name (sql_group_name + '_' + sql_display_name)
   /// Val: sql_name
-  final Map<String, String> _sqlNameMap = {};
+  final StringMap _sqlNameMap = {};
 
   @override
   bool initWithWebApiResult(WebApiResult webApiResult) {
@@ -67,7 +67,7 @@ class TextStylePredicateManager extends SingleTypeManagerBootstrap<TextStylePred
   }
 
   @override
-  TextStylePredicate getFromMap(Map<String, String> map) {
+  TextStylePredicate getFromMap(StringMap map) {
     return TextStylePredicate(
       uniqueName: map["unique_name"] ?? "",
       predicateOrder: int.tryParse(map["predicate_order"] ?? "0") ?? 0,

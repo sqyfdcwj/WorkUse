@@ -72,7 +72,7 @@ class DynamicWidgetManager extends SingleTypeManagerBootstrap<DynamicWidgetData>
   }
 
   @override
-  DynamicWidgetData getFromMap(Map<String, String> map) {
+  DynamicWidgetData getFromMap(StringMap map) {
     return DynamicWidgetData(
       id: int.tryParse(map["config_id"] ?? "0") ?? 0,
       parentId: int.tryParse(map["parent_config_id"] ?? "0") ?? 0,
@@ -162,7 +162,7 @@ class DynamicWidgetData {
   static late final Map<String, TextBaseline> _textBaselineMap
   = Map.fromEntries(TextBaseline.values.map((line) => MapEntry(line.name.toLowerCase(), line)));
 
-  static Color? parseColor(Map<String, String> map, {
+  static Color? parseColor(StringMap map, {
     String fieldA = "background_a",
     String fieldR = "background_r",
     String fieldG = "background_g",
@@ -218,7 +218,7 @@ class DynamicWidgetData {
 typedef DynamicWidgetBuilder = Widget Function(
   String configName,
   DynamicWidgetData widgetData,
-  Map<String, String> data,
+  StringMap data,
   Widget child,
 );
 
@@ -232,7 +232,7 @@ class DynamicWidget extends StatelessWidget {
   ///
   final DynamicWidgetData parentWidgetData;
 
-  final Map<String, String> data;
+  final StringMap data;
 
   /// Called when [widgetData.widgetType] is neither 'Stack', 'Column' and 'Row'
   final DynamicWidgetBuilder builder;
@@ -251,7 +251,7 @@ class DynamicWidget extends StatelessWidget {
 
   factory DynamicWidget.root({
     required String configName,
-    Map<String, String> data = const {},
+    StringMap data = const {},
     required DynamicWidgetBuilder builder,
     required Widget Function(BuildContext) defaultBuilder,
   }) => DynamicWidget._(

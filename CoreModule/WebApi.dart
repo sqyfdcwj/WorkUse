@@ -52,7 +52,7 @@ class WebApi {
   /// }
 
   /// Every key starts with prefix "request_"
-  final Map<String, String> _requestAdditionalInfo = {};
+  final StringMap _requestAdditionalInfo = {};
   void setRequestAdditionalInfo(String key, String value) {
     _requestAdditionalInfo["request_$key"] = value;
   }
@@ -188,26 +188,26 @@ class WebApiResult {
     return toElement(body[fieldName]);
   }
 
-  Map<String, List< Map<String, String> > > asMapListStringMap({ required String fieldName }) {
-    return asMapList(fieldName: fieldName, toElement: (e) => Map<String, String>.from(e));
+  Map<String, List< StringMap > > asMapListStringMap({ required String fieldName }) {
+    return asMapList(fieldName: fieldName, toElement: (e) => StringMap.from(e));
     // try {
     //   Map<String, List> tmpMap = Map<String, List>.from(body[fieldName]);
-    //   return tmpMap.map((k, v) => MapEntry(k, v.map((e) => Map<String, String>.from(e)).toList()));
+    //   return tmpMap.map((k, v) => MapEntry(k, v.map((e) => StringMap.from(e)).toList()));
     // } catch (_) {
     //   return {};
     // }
   }
 
-  List< Map<String, String> > asListStringMap({ required String fieldName }) {
-    return asList(fieldName: fieldName, toElement: (e) => Map<String, String>.from(e));
+  List< StringMap > asListStringMap({ required String fieldName }) {
+    return asList(fieldName: fieldName, toElement: (e) => StringMap.from(e));
     // try {
-    //   return List.from(body[fieldName]).map((e) => Map<String, String>.from(e)).toList();
+    //   return List.from(body[fieldName]).map((e) => StringMap.from(e)).toList();
     // } catch (_) {
     //   return [];
     // }
   }
 
-  Map<String, String> listSingle({ required String fieldName }) {
+  StringMap listSingle({ required String fieldName }) {
     final list = asListStringMap(fieldName: fieldName);
     return list.isEmpty ? {} : list.first;
   }
@@ -220,13 +220,13 @@ class WebApiResult {
     }
   }
 
-  Map<String, List< Map<String, String> > > allListStringMap() {
+  Map<String, List< StringMap > > allListStringMap() {
     final arrEntry = body.entries;
-    final result = <String, List< Map<String, String> > >{};
+    final result = <String, List< StringMap > >{};
     for (final entry in arrEntry) { // MapEntry<String, dynamic>
       try {
         List list1 = List.from(entry.value);
-        List< Map<String, String> > list2 = list1.map((e) => Map<String, String>.from(e)).toList();
+        List< StringMap > list2 = list1.map((e) => StringMap.from(e)).toList();
         result[entry.key] = list2;
       } catch (_) {
         continue;
