@@ -4,8 +4,11 @@ require_once 'DBConn.php';
 
 abstract class ADBTask
 {
-    protected array $input = [];
-    public function getInput(): array { return $this->input; }
+    /**
+     * The data structure to be iterated
+     */
+    protected array $body = [];
+    public function getInput(): array { return $this->body; }
 
     /**
      * This function MUST be overriden by derived class, 
@@ -38,7 +41,9 @@ abstract class DBTask extends ADBTask
         $opResultList = [];
         
         if ($useTransaction) {
-            $opContextList[] = OpContext::beginTransaction();
+            $opContext = OpContext::beginTransaction();
+            $opContext->setTags($conn->getDBInfo());
+            $opContextList[] = $opContext;
         }
 
         $dryRunResult = $this->dryRun($conn);
@@ -48,6 +53,7 @@ abstract class DBTask extends ADBTask
             if ($isError || !($opContext instanceof OpContext)) { 
                 continue; 
             }
+            $opContext->setTags($conn->getDBInfo());
             $opResult = $conn->execContext($opContext);
             $opResultList[] = $opResult;
             $this->onTaskGetOpResult($opResult);
@@ -58,10 +64,13 @@ abstract class DBTask extends ADBTask
 
         if ($useTransaction) {
             if (!$isError) {
-                $opResult = $conn->commit();
+                $opContext = OpContext::commit();
             } else {
-                $opResult = $conn->rollBack();
+                $opContext = OpContext::rollBack();
             }
+            $opContext->setTags($conn->getDBInfo());
+            $opContextList[] = $opContext;
+            $opResult = $conn->execContext($opContext);
             $opResultList[] = $opResult;
             $this->onTaskGetOpResult($opResult);
         }
@@ -69,18 +78,20 @@ abstract class DBTask extends ADBTask
     }
 
     /**
-     * No-op in this class. Write the concrete busineses logic in the derived class.
-     * This function SHOULD ONLY be called inside ADBTask::run, 
-     * and SHOULD be called immediately after calling a function which returns a OpResult.
-     * Do something that requires immediate handle during the task (E.g. writing to error log)
+     * No-op in this class.
      * 
-     * @param OpResult $opResult The result retrieved 
+     * This function is called inside ADBTask::run, 
+     * and is called immediately after calling DBConn::execContext(OpContext),
+     * which returns a OpResult instance.
+     * 
+     * Do something that requires immediate handle of OpResult (E.g. write result into to error log)
+     * @param OpResult $opResult
      */
     protected function onTaskGetOpResult(OpResult $opResult): void { }
 }
 
 /**
- * This class contains a list of OpContext and is used by ADBTask
+ * Contains a list of OpContext and is used by ADBTask
  */
 class DBTaskMidResult
 {

@@ -6,6 +6,21 @@
 class DBConn
 {
     private array $dbInfo = [];
+
+    /**
+     * Return an key-value array that contains database info
+     * Available keys:
+     * driver: Database driver. Possible values:
+     * pgsql - PostgreSQL
+     * mssql - Microsoft Server
+     * 
+     * host Database host
+     * port: Database port
+     * dbname: Database name
+     * dsn: DataSource name which can be used in PDO::__construct
+     * dsn2: DataSource name which is more readable, does not contain driver name.
+     * @return array Database info
+     */
     public function getDBInfo(): array { return $this->dbInfo; }
     
     private PDO $pdo;
@@ -20,10 +35,12 @@ class DBConn
         $this->dbInfo["port"] = $port;
         $this->dbInfo["dbname"] = $dbname;
         $this->dbInfo["dsn"] = $dsn;
+        $this->dbInfo["dsn2"] = "$host:$port $dbname";
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ];
-        $this->pdo = new PDO($dsn, $user, $pwd, $options);  # potential PDOException, should be handled by caller
+        // Potential PDOException, should be handled properly.
+        $this->pdo = new PDO($dsn, $user, $pwd, $options);
     }
 
     public static function getDSN(string $driver, string $host, int $port, string $dbname): string 
@@ -51,8 +68,13 @@ class DBConn
 
     public function rollBack(): OpResult { return $this->execContext(OpContext::rollBack()); }
 
-    public function exec(string $sql, array $param = [], array $tags = []): OpResult
-    { return $this->execContext(OpContext::nonTcl($sql, $param, $tags)); }
+    public function exec(
+        string $sql, 
+        array $rawParam = [],
+        array $tags = [], 
+        bool $isThrowEx = FALSE
+    ): OpResult
+    { return $this->execContext(OpContext::nonTcl($sql, $rawParam, $tags), $isThrowEx); }
 
     /**
      * Perform database action with given OpContext.
@@ -91,9 +113,13 @@ class DBConn
             }
             $trace = "";
         } catch (PDOException $e) {
-            $isSuccess = FALSE;
-            $errMsg = $e->getMessage();
-            $trace = $e->getTraceAsString();
+            if ($isThrowEx) {
+                throw $e;
+            } else {
+                $isSuccess = FALSE;
+                $errMsg = $e->getMessage();
+                $trace = $e->getTraceAsString();
+            }
         }
         return new OpResult($opContext, $isSuccess, $sqlState, $errMsg, $rowCount, $dataSet, $trace);
     }
@@ -130,6 +156,10 @@ final class OpContext
     private string $sql = "";
     public function getSql(): string { return $this->sql; }
 
+
+    private array $rawParam = [];
+    public function getRawParam(): array { return $this->rawParam; }
+
     private array $sqlParam = [];
     public function getSqlParam(): array { return $this->sqlParam; }
 
@@ -157,11 +187,12 @@ final class OpContext
     public function setTag(string $key, string $tag): void { $this->tags[$key] = $tag; }
     public function getTag(string $key): string { return $this->tags[$key] ?? ""; }
 
-    private function __construct(string $sql, array $sqlParam, bool $isTcl, array $tags = []) 
+    private function __construct(string $sql, array $rawParam, bool $isTcl, array $tags = []) 
     {
         $this->id = self::getNextId();
         $this->sql = $sql;
-        $this->sqlParam = $sqlParam;
+        $this->rawParam = $rawParam;
+        $this->sqlParam = SQLUtil::getParamList($sql, $rawParam);
         $this->isTcl = $isTcl;
         $this->tags = $tags;
     }
@@ -170,8 +201,8 @@ final class OpContext
     public static function commit(): self { return new OpContext(__FUNCTION__, [], TRUE); }
     public static function rollBack(): self { return new OpContext(__FUNCTION__, [], TRUE); }
 
-    public static function nonTcl(string $sql, array $sqlParam, array $tags = []): self 
-    { return new OpContext($sql, $sqlParam, FALSE, $tags); }
+    public static function nonTcl(string $sql, array $rawParam, array $tags = []): self 
+    { return new OpContext($sql, $rawParam, FALSE, $tags); }
 }
 
 final class OpResult
@@ -213,5 +244,3 @@ final class OpResult
         $this->trace = $trace;
     }
 }
-
-?>
