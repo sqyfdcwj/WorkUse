@@ -70,22 +70,20 @@ final class SQLUtil
         return $result;
     }
 
-    public static function castToStr(array &$row): array
+    public static function castToStr(array &$row): void
     {
         foreach ($row as $name => $value) {
             $row[$name] = strval($value);
         }
-        return $row;
     }
 
-    public static function castBoolToInt(array &$row): array
+    public static function castBoolToInt(array &$row): void
     {
         foreach ($row as $name => $value) {
             if (is_bool($value)) {
                 $row[$name] = intval($value);
             }
         }
-        return $row;
     }
 }
 

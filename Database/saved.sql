@@ -94,7 +94,7 @@ create table apps.sys_api_sql_caption_dtl
     zh_tw varchar(100)
 );
 
-/* Text style configurations of a Flutter project */
+/* Text style and color configurations of a Flutter project */
 create table apps.flutter_text_style
 (
     style_id serial primary key,
@@ -102,15 +102,20 @@ create table apps.flutter_text_style
 	  /* Used by developer. Provide info about what scenario this style is used in. */
     style_name varchar(50) unique not null,
 
+    /* Meaningless when the record is used to represent a color only */
     font_size integer default 14,
 
+    /* If you want the color to be NULL, set -1 to all argb properties */
     a integer default 255,
     r integer default 0,
     g integer default 0,
     b integer default 0,
 
-    is_bold boolean default false,
-    is_italic boolean default false
+    /* Meaningless when the record is used to represent a color only */
+    is_italic boolean default false,
+
+    /* Meaningless when the record is used to represent a color only */
+    font_weight integer default 4
 );
 
 /* Text style predicate configurations of a Flutter project */
@@ -200,7 +205,7 @@ create table apps.flutter_widget_config
     padding_top integer default 0,
     padding_bottom integer default 0,
 
-    /* Color related */
+    /* If you want the color to be NULL, set -1 to all argb properties */
     background_a integer,
     background_r integer,
     background_g integer,
