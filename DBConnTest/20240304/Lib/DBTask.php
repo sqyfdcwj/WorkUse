@@ -2,7 +2,7 @@
 
 require_once 'DBConn.php';
 
-abstract class ADBTask
+abstract class DBTask
 {
     /**
      * The data structure to be iterated
@@ -22,18 +22,10 @@ abstract class ADBTask
      * Perform batch task with given database connection
      * @param DBConn $conn Database connection
      * @param bool $useTransaction Should the task run inside a transaction ?
-     * @throws PDOException If DBConn already has an active transaction and $useTransaction is TRUE
+     * @throws \PDOException If DBConn already has an active transaction and $useTransaction is TRUE
      * @return DBTaskResult A list of OpResult, and extra info
      */
-    abstract function run(DBConn $conn, bool $useTransaction): DBTaskResult;
-}
-
-/**
- * A class which implemented default run function 
- */
-abstract class DBTask extends ADBTask
-{
-    public function run(DBConn $conn, bool $useTransaction = TRUE): DBTaskResult
+    public function run(DBConn $conn, bool $useTransaction): DBTaskResult
     {
         $isError = FALSE;
         
@@ -86,18 +78,12 @@ abstract class DBTask extends ADBTask
      * 
      * Do something that requires immediate handle of OpResult (E.g. write result into to error log)
      * @param OpResult $opResult
+     * @return void
      */
     protected function onTaskGetOpResult(OpResult $opResult): void { }
 }
-
-/**
- * Contains a list of OpContext and is used by ADBTask
- */
 class DBTaskMidResult
 {
-    /**
-     * List of OpContext. All elements are ordered by the field $id in ascending order
-     */
     private array $opContextList = [];
     public function getOpContextList(): array { return $this->opContextList; }
 
@@ -108,7 +94,6 @@ class DBTaskMidResult
                 $this->opContextList[] = $opContext;
             }
         }
-        usort($this->opContextList, [ "OpContext", "sortById" ]);
     }
 }
 
@@ -116,6 +101,8 @@ class DBTaskResult
 {
     private ?OpResult $lastError = NULL;
     public function getLastError(): ?OpResult { return $this->lastError; }
+
+    public function getIsSuccess(): bool { return $this->lastError === NULL; }
 
     private array $opResultList = [];
     public function getOpResultList(): array { return $this->opResultList; }
@@ -127,7 +114,6 @@ class DBTaskResult
                 $this->opResultList[] = $opResult;
             }
         }
-        usort($this->opResultList, [ "OpResult", "sortById" ]);
         foreach ($this->opResultList as $opResult) {
             if (!$opResult->getIsSuccess()) {
                 $this->lastError = $opResult;

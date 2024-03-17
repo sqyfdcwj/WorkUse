@@ -2,63 +2,60 @@
 
 header("Content-type:application/json");
 
-require_once 'DataSource.php';
-require_once 'DBConn.php';
-require_once 'DBConnExtension.php';
-require_once 'WebApiRequest.php';
-require_once 'WebApiEmail.php';
-require_once 'SQLUtil.php';
+require_once '20240304/lib/DBConn.php';
+require_once '20240304/lib/WebApiRequest.php';
 
-$isError = false;
-$message = "";
+// $isError = false;
+// $message = "";
 $body = [];
 
 try {
     // $conn = DBConnExtension::xtraWithKey($_GET["key"]);
-    $conn = DBConn::pg("10.50.50.226", 5434, "erp_kayue_trading__20231228", "postgres", "xtra!@#$%");
+    // $conn = DBConn::pg("10.50.50.226", 5434, "erp_kayue_trading__20231228", "postgres", "xtra!@#$%");
+    $conn = DBConn::pg("localhost", 54322, "postgres", "postgres", "1234");
 
     $raw = file_get_contents("php://input");
     $version = intval(basename(getcwd()));  // 0 if failed to convert
     $request = new WebApiRequest($raw, $version === 0 ? 99999999 : $version);
     $result = $request->run($conn, TRUE);   // 
-    $lastError = $result->getLastError();
-    $isError = $lastError !== NULL;
-    $message = $isError ? $lastError->getErrMsg() : "";
 
-    if (!$isError) {
+    if ($result->getIsSuccess()) {
         $opResultList = $result->getOpResultList();
         foreach ($opResultList as $opResult) {
-            if ($opResult instanceof OpResult) {
-                $opContext = $opResult->getContext();
-                if ($opContext->getIsTcl()) { continue; }
+            if (!($opResult instanceof OpResult)) {
+                continue;
+            }
 
-                $dataSet = $opResult->getDataSet();
-                $sqlDisplayName = $opContext->getTag("sql_display_name");
-                $keyField = $opContext->getTag("key_field");
+            $opContext = $opResult->getContext();
+            if ($opContext->getIsTcl()) { continue; }
 
-                foreach ($dataSet as &$row) {
-                    SQLUtil::castBoolToInt($row);
-                    SQLUtil::castToStr($row);
-                }
+            $dataSet = $opResult->getDataSet();
+            $sqlDisplayName = $opContext->getTag("sql_display_name");
+            $keyField = $opContext->getTag("key_field");
 
-                if (empty($keyField)) {
-                    $body[$sqlDisplayName] = $dataSet;
-                } else {
-                    $body[$sqlDisplayName] = SQLUtil::pivot($dataSet, $keyField);
-                    $body[$sqlDisplayName."_keys"] = array_keys($body[$sqlDisplayName]);
-                }
+            foreach ($dataSet as &$row) {
+                DataSetUtil::castBoolToInt($row);
+                DataSetUtil::castToStr($row);
+            }
+
+            if (empty($keyField)) {
+                $body[$sqlDisplayName] = $dataSet;
+            } else {
+                $body[$sqlDisplayName] = DataSetUtil::pivot($dataSet, $keyField);
+                $body[$sqlDisplayName."_keys"] = array_keys($body[$sqlDisplayName]);
             }
         }
 
         $responseBody = json_encode([
-            "code" => $isError ? 1 : 0,
-            "message" => $message,
+            "code" => 0,
+            "message" => "",
             "body" => $body
         ]);
 
         /**
          * Insert database log when the request contains at least 1 SqlGroupName
          */
+        /*
         $sqlGroupNameList = $request->getSqlGroupNameList();
         if (empty($sqlGroupNameList)) {
             return;
@@ -89,16 +86,18 @@ try {
                 "response_body" => $responseBody
             ]
         ));
+        */
 
     } else {
-
+        $lastError = $result->getLastError();
+        $lastErrorContext = $result->getLastError()->getContext();
         $responseBody = json_encode([
-            "code" => $isError ? 1 : 0,
-            "message" => $message,
+            "code" => 1,
+            "message" => $lastError->getErrMsg(),
             "body" => $body
         ]);
 
-
+/*
         $sql = "
         INSERT INTO apps.sys_api_sql_log (
             sql_group_dtl_id, sql_group_name,
@@ -150,23 +149,29 @@ try {
         //     $conn->getDBInfo()["dsn2"],
         //     $message
         // );
+*/
     }
+
+    echo "OK";
 } catch (PDOException $e) {
     $isError = TRUE;
-    $message = $e->getMessage();
-    (new WebApiEmail())->send(
-        $_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'],
-        $conn->getDBInfo()["dsn2"],
-        $message
-    );
+    // $message = $e->getMessage();
+    // (new WebApiEmail())->send(
+    //     $_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'],
+    //     $conn->getDBInfo()["dsn2"],
+    //     $message
+    // );
+    // echo $e->getMessage().PHP_EOL;
 } catch (\Exception $e) {
-    $isError = TRUE;
-    $message = $e->getMessage();
-    (new WebApiEmail())->send(
-        $_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'],
-        "",
-        "Failed to connect database"
-    );
+    // $isError = TRUE;
+    // $message = $e->getMessage();
+    // (new WebApiEmail())->send(
+    //     $_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'],
+    //     "",
+    //     "Failed to connect database"
+    // );
+    echo "EX".PHP_EOL;
+    echo $e->getMessage();
 }
 
 function insertLog(DBConn $conn, array ...$paramList): OpResult

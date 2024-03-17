@@ -1,11 +1,11 @@
 <?php
 
-require_once 'DataSource.php';  // This file has required DBConn.php
+require_once 'Lib/DBTask.php';
 
 /**
  * In this class, ADBTask::$body is confirmed to be Map<String, List>
  */
-class WebApiRequest extends DBTask
+final class WebApiRequest extends DBTask
 {
     protected int $version = 0;
     public function getVersion(): int { return $this->version; }
@@ -22,13 +22,13 @@ class WebApiRequest extends DBTask
         $this->version = $version;
         $json = json_decode($this->raw, TRUE);
         if ($json === NULL) {
-            throw new JsonException("Failed to decode JSON");
+            throw new \JsonException("Failed to decode JSON");
         }
         if (!isset($json["request"])) {
-            throw new JsonException("Field 'request' is not set");
+            throw new \JsonException("Field 'request' is not set");
         }
         if (!is_array($json["request"])) {
-            throw new JsonException("Field 'request' is not array");
+            throw new \JsonException("Field 'request' is not array");
         }
         $this->body = $json["request"];
     }

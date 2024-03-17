@@ -1,12 +1,10 @@
 <?php 
 
-require_once 'DBConn.php';
-
 /**
  * This class has defined serveral handy functions for connecting to Xtrapower's database.
  * Should be used internally
  */
-class DBConnExtension
+final class DBConnExtension
 {
     public static function xtra(string $host, int $port, string $dbname): DBConn
     { return DBConn::pg($host, $port, $dbname, "postgres", "xtra!@#$%"); }
