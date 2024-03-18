@@ -1,5 +1,7 @@
 <?php
 
+require_once 'SQLUtil.php';
+
 /**
  * Provides PDO functionality and holds database connection info
  */
@@ -126,5 +128,120 @@ final class DBConn
             }
         }
         return new OpResult($opContext, $isSuccess, $sqlState, $errMsg, $rowCount, $dataSet, $trace);
+    }
+}
+
+################################################################
+
+final class OpContext
+{
+    /**
+     * If $this->isTcl is true, the value is one of the following values:
+     * beginTransaction
+     * commit
+     * rollBack
+     * 
+     * otherwise, the value will be the SQL string  
+     */
+    private string $sql = "";
+    public function getSql(): string { return $this->sql; }
+
+
+    private array $rawParam = [];
+    public function getRawParam(): array { return $this->rawParam; }
+
+    private array $sqlParam = [];
+    public function getSqlParam(): array { return $this->sqlParam; }
+
+    /**
+     * Is Transaction Control Language (begin / commit / rollBack)
+     */
+    private bool $isTcl = FALSE;
+    public function getIsTcl(): bool { return $this->isTcl; }
+
+    /**
+     * Custom tags used for storing external info or fields
+     */
+    private array $tags = [];
+    public function setTags(array $tags): void
+    {
+        foreach ($tags as $key => $val) {
+            if (is_int($val) || is_string($val) || is_float($val)) {
+                $this->setTag($key, $val);
+            }
+        }
+    }
+
+    public function getTags(): array { return $this->tags; }
+
+    public function setTag(string $key, string $tag): void { $this->tags[$key] = $tag; }
+    public function getTag(string $key): string { return $this->tags[$key] ?? ""; }
+
+    private function __construct(string $sql, array $rawParam, bool $isTcl, array $tags = []) 
+    {
+        $this->sql = $sql;
+        $this->rawParam = $rawParam;
+        $this->sqlParam = SQLUtil::getParamList($sql, $rawParam);
+        $this->isTcl = $isTcl;
+        $this->tags = $tags;
+    }
+
+    public static function beginTransaction(): self { return new OpContext(__FUNCTION__, [], TRUE); }
+    public static function commit(): self { return new OpContext(__FUNCTION__, [], TRUE); }
+    public static function rollBack(): self { return new OpContext(__FUNCTION__, [], TRUE); }
+
+    public static function nonTcl(string $sql, array $rawParam, array $tags = []): self 
+    { return new OpContext($sql, $rawParam, FALSE, $tags); }
+}
+
+################################################################
+
+final class OpResult
+{
+    private OpContext $ctxt;
+    public function getContext(): OpContext { return $this->ctxt; }
+
+    /**
+     * @var string $sqlState 5-Digit String
+     */
+    private string $sqlState = "";
+    public function getSqlState(): string { return $this->sqlState; }
+
+    /**
+     * @var string $errMsg Error message. Empty when there is no error.
+     */
+    private string $errMsg = "";    
+    public function getErrMsg(): string { return $this->errMsg; }
+
+    /**
+     * @var string $trace Retrieved by PDOException::getTraceAsString(). Empty when there is no error.
+     */
+    private string $trace = "";
+    public function getTrace(): string { return $this->trace; }
+
+    private bool $isSuccess = FALSE;
+    public function getIsSuccess(): bool { return $this->isSuccess; }
+
+    /**
+     * The number of rows affected by a INSERT / UPDATE / DELETE statement,
+     * or the number of rows returned by a SELECT statement
+     */
+    private int $rowCount = 0;
+    public function getRowCount(): int { return $this->rowCount; }
+
+    private array $dataSet = [];
+    public function getDataSet(): array { return $this->dataSet; }
+
+    public function __construct(OpContext $ctxt, bool $isSuccess,
+        string $sqlState, string $errMsg, int $rowCount, 
+        array $dataSet, string $trace = ""
+    ) {
+        $this->ctxt = $ctxt;
+        $this->isSuccess = $isSuccess;
+        $this->sqlState = $sqlState;
+        $this->errMsg = $errMsg;
+        $this->rowCount = $rowCount;
+        $this->dataSet = $dataSet;
+        $this->trace = $trace;
     }
 }

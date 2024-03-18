@@ -3,23 +3,42 @@
 require_once 'Lib/DBTask.php';
 
 /**
- * In this class, ADBTask::$body is confirmed to be Map<String, List>
+ * DBTask::$body is confirmed to be Map<String, List>
  */
 final class WebApiRequest extends DBTask
 {
-    protected int $version = 0;
+    private int $version = 0;
     public function getVersion(): int { return $this->version; }
 
-    protected string $raw = "";
+    private string $raw = "";
     public function getRaw(): string { return $this->raw; }
 
+    private ?int $requestUserId = NULL;
+    private ?string $requestUsername = NULL;
+
+    public function getRequestInfo(): array 
+    { 
+        return [
+            "request_app_version" => $this->version,
+            "request_user_id" => $this->requestUserId,
+            "request_username" => $this->requestUsername,
+            "request_body" => $this->raw,
+            "request_ip" => $_SERVER["REMOTE_ADDR"],
+            "request_port" => $_SERVER["REMOTE_PORT"]
+        ];
+    }
+
     /**
-     * @param $version The value should be retrieved by calling intval(basename(getcwd()))
+     * @return array All keys of DBTask::$body
      */
-    public function __construct($raw, int $version)
+    public function getSqlGroupNameList(): array { return array_keys($this->body); }
+
+    /**
+     * @param $defaultVersion When failed to decode $version from the request body
+     */
+    public function __construct($raw, int $defaultVersion)
     {
         $this->raw = $raw;
-        $this->version = $version;
         $json = json_decode($this->raw, TRUE);
         if ($json === NULL) {
             throw new \JsonException("Failed to decode JSON");
@@ -31,17 +50,31 @@ final class WebApiRequest extends DBTask
             throw new \JsonException("Field 'request' is not array");
         }
         $this->body = $json["request"];
+
+        if (is_array($json["request_info"])) {
+            $requestInfo = $json["request_info"];
+            $this->version = is_numeric($requestInfo["request_app_version"])
+                ? intval($requestInfo["request_app_version"])
+                : $defaultVersion;
+            $this->requestUserId = is_numeric($requestInfo["request_user_id"])
+                ? intval($requestInfo["request_user_id"])
+                : NULL;
+            $this->requestUsername = is_string($requestInfo["request_username"])
+                ? $requestInfo["request_username"]
+                : NULL;
+        } else {
+            $this->version = $defaultVersion;
+        }
     }
 
     /**
-     * We don't need to append DBConn info in this function.
-     * ADBTask::run will do it for us
+     * We don't need to append DBConn info in this function. DBTask::run will do that.
      */
-    public function dryRun(DBConn $conn): DBTaskMidResult
+    public function dryRun(DBConn $conn): array
     {
         $result = [];
         foreach ($this->body as $sqlGroupName => $sqlGroupNameRows) {
-            // Assert this will never fail ...
+            // Assert this will never fail
             $opSqlGroupDtl = $this->getSqlGroupDtl($conn, [
                 "sql_group_name" => $sqlGroupName, 
                 "sql_group_version" => $this->version
@@ -51,12 +84,12 @@ final class WebApiRequest extends DBTask
                     $result[] = OpContext::nonTcl(
                         $sqlGroupDtl["sql"], 
                         $row,
-                        array_merge($sqlGroupDtl, [ "row" => $rowIdx + 1 ])
+                        array_merge($sqlGroupDtl, $this->getRequestInfo(), [ "row" => $rowIdx ])
                     );
                 }
             }
         }
-        return new DBTaskMidResult($result);
+        return $result;
     }
 
     private function getSqlGroupDtl(DBConn $conn, array $param, array $tags = []): OpResult
@@ -80,29 +113,38 @@ ORDER BY sql_order;
 
     protected function onTaskGetOpResult(OpResult $opResult): void
     {
-        // If you need to write error log, do it inside this function
-        // var_dump($opResult);
+        $this->errLog($opResult);
+    }
 
+    private function errLog(OpResult $opResult): void
+    {
         $opContext = $opResult->getContext();
         $dsn2 = $opContext->getTag("dsn2");
         $scriptName = $_SERVER["SCRIPT_NAME"];
         if ($opContext->getIsTcl()) {
             $msg = $opContext->getSql();
-            echo "$dsn2 | $msg | $scriptName".PHP_EOL;
+            $this->outputMsg("$dsn2 | $msg | $scriptName");
         } else if ($opResult->getIsSuccess()) {
             $msg = "Success";
             $sqlName = $opContext->getTag("sql_name");
-            echo "$dsn2 | $msg | $sqlName | $scriptName".PHP_EOL;
+            $this->outputMsg("$dsn2 | $msg | $sqlName | $scriptName");
         } else {
             $msg = $opResult->getErrMsg();
             $sqlGroupName = $opContext->getTag("sql_group_name");
             $row = $opContext->getTag("row");
-            echo "$dsn2 | $msg | sql_group_name = $sqlGroupName, row = $row | $scriptName".PHP_EOL;
+            $this->outputMsg("$dsn2 | $msg | sql_group_name = $sqlGroupName, row = $row | $scriptName");
         }
     }
 
-    public function getSqlGroupNameList(): array
+    /**
+     * Output message to error_log or output buffer (Display on screen) 
+     */
+    private function outputMsg(string $message, bool $toErrorLog = TRUE): void
     {
-        return array_keys($this->body);
+        if ($toErrorLog) {
+            error_log($message);
+        } else {
+            echo $message.PHP_EOL;
+        }
     }
 }
