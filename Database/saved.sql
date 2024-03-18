@@ -46,7 +46,7 @@ create table apps.sys_api_sql_log
     sql_group_dtl_id integer,
 
     /* Snapshot. See [apps.sys_api_sql_group_dtl.sql_group_name] */
-    sql_group_name varchar(50),
+    sql_group_name varchar(200),
 
     /* Snapshot. See [apps.sys_api_sql_group_dtl.sql_group_version] */
     sql_group_version integer,
@@ -66,7 +66,17 @@ create table apps.sys_api_sql_log
     /* Raw input that processed by API */
     response_xml text,
 
-    created_on timestamp(0) without time zone default now()
+    created_on timestamp(0) without time zone default now(),
+
+    request_user_id integer,
+
+    request_username varchar(100),
+
+    request_body text,
+
+    response_body text,
+
+    request_app_version integer
 );
 
 /* Caption configurations of a Flutter project */
