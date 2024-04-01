@@ -24,7 +24,7 @@ final class DBConn
      */
     public function getDBInfo(): array { return $this->dbInfo; }
     
-    private \PDO $pdo;
+    private PDO $pdo;
 
     public function __construct(
         string $driver, string $host, int $port, string $dbname, 
@@ -38,11 +38,10 @@ final class DBConn
         $this->dbInfo["dsn"] = $dsn;
         $this->dbInfo["dsn2"] = "$host:$port $dbname";
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_TIMEOUT => 1
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ];
         // Potential PDOException, should be handled properly.
-        $this->pdo = new \PDO($dsn, $user, $pwd, $options);
+        $this->pdo = new PDO($dsn, $user, $pwd, $options);
     }
 
     public static function getDSN(string $driver, string $host, int $port, string $dbname): string 
@@ -63,11 +62,20 @@ final class DBConn
 
     public function inTransaction(): bool { return $this->pdo->inTransaction(); }
 
-    public function beginTransaction(): OpResult { return $this->execContext(OpContext::beginTransaction()); }
+    public function beginTransaction(bool $isThrowEx = FALSE): OpResult 
+    { 
+        return $this->execContext(OpContext::beginTransaction(), $isThrowEx); 
+    }
 
-    public function commit(): OpResult { return $this->execContext(OpContext::commit()); }
+    public function commit(bool $isThrowEx = FALSE): OpResult 
+    { 
+        return $this->execContext(OpContext::commit(), $isThrowEx); 
+    }
 
-    public function rollBack(): OpResult { return $this->execContext(OpContext::rollBack()); }
+    public function rollBack(bool $isThrowEx = FALSE): OpResult 
+    { 
+        return $this->execContext(OpContext::rollBack(), $isThrowEx); 
+    }
 
     /**
      * 
@@ -86,48 +94,52 @@ final class DBConn
      * @param OpContext $opContext 
      * @param bool $isThrowEx Whether to rethrow the PDOException caught in this function
      * 
-     * @throws \PDOException
+     * @throws PDOException
      * @return OpResult 
      */
     public function execContext(OpContext $opContext, bool $isThrowEx = FALSE): OpResult
     {
-        $isSuccess = TRUE;
         $sqlState = "";
-        $errMsg = "";
         $rowCount = 0;
         $dataSet = [];
-        $trace = "";
+        $caughtEx = NULL;
         try {
             if ($opContext->getIsTcl()) {
+                // If TCL operation raised exception, sqlState will be NULL
                 switch ($opContext->getSql()) {
                     case "beginTransaction":
-                        $isSuccess = $this->pdo->beginTransaction();
+                        $this->pdo->beginTransaction();
                         break;
                     case "commit":
-                        $isSuccess = $this->pdo->commit();
+                        $this->pdo->commit();
                         break;
                     case "rollBack":
-                        $isSuccess = $this->pdo->rollBack();
+                        $this->pdo->rollBack();
                         break;
                 }
             } else {
                 $stmt = $this->pdo->prepare($opContext->getSql());            
-                $isSuccess = $stmt->execute($opContext->getSqlParam());
+                $stmt->execute($opContext->getSqlParam());
                 $sqlState = $stmt->errorCode() ?? "";
-                $dataSet = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                $dataSet = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $rowCount = $stmt->rowCount();
             }
-            $trace = "";
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             if ($isThrowEx) {
                 throw $e;
             } else {
-                $isSuccess = FALSE;
-                $errMsg = $e->getMessage();
-                $trace = $e->getTraceAsString();
+                $caughtEx = $e;
+                $sqlState = $e->getCode() ?? "";
             }
         }
-        return new OpResult($opContext, $isSuccess, $sqlState, $errMsg, $rowCount, $dataSet, $trace);
+
+        return new OpResult(
+            $opContext,
+            $caughtEx,
+            $sqlState,
+            $rowCount,
+            $dataSet
+        );
     }
 }
 
@@ -207,20 +219,26 @@ final class OpResult
     private string $sqlState = "";
     public function getSqlState(): string { return $this->sqlState; }
 
+    private ?Exception $ex = NULL;
+    public function getException(): ?Exception { return $this->ex; }
+
+    public function getIsSuccess(): bool { return $this->ex === NULL; }
+
     /**
      * @var string $errMsg Error message. Empty when there is no error.
      */
-    private string $errMsg = "";    
-    public function getErrMsg(): string { return $this->errMsg; }
+    public function getErrMsg(): string 
+    { 
+        return $this->ex === NULL ? "" : $this->ex->getMessage(); 
+    }
 
     /**
-     * @var string $trace Retrieved by PDOException::getTraceAsString(). Empty when there is no error.
+     * @var string PDOException::getTraceAsString(). Empty when there is no error.
      */
-    private string $trace = "";
-    public function getTrace(): string { return $this->trace; }
-
-    private bool $isSuccess = FALSE;
-    public function getIsSuccess(): bool { return $this->isSuccess; }
+    public function getTrace(): string 
+    { 
+        return $this->ex === NULL ? "" : $this->ex->getTraceAsString(); 
+    }
 
     /**
      * The number of rows affected by a INSERT / UPDATE / DELETE statement,
@@ -232,16 +250,17 @@ final class OpResult
     private array $dataSet = [];
     public function getDataSet(): array { return $this->dataSet; }
 
-    public function __construct(OpContext $ctxt, bool $isSuccess,
-        string $sqlState, string $errMsg, int $rowCount, 
-        array $dataSet, string $trace = ""
+    public function __construct(
+        OpContext $ctxt,
+        ?Exception $ex,
+        string $sqlState, 
+        int $rowCount, 
+        array $dataSet
     ) {
         $this->ctxt = $ctxt;
-        $this->isSuccess = $isSuccess;
+        $this->ex = $ex;
         $this->sqlState = $sqlState;
-        $this->errMsg = $errMsg;
         $this->rowCount = $rowCount;
         $this->dataSet = $dataSet;
-        $this->trace = $trace;
     }
 }
