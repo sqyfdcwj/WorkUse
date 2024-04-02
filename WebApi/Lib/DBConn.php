@@ -10,17 +10,12 @@ final class DBConn
     private array $dbInfo = [];
 
     /**
-     * Available keys:
-     * driver: Database driver. Possible values:
-     * pgsql - PostgreSQL
-     * mssql - Microsoft Server
-     * 
+     * @return array Database info, available keys:
      * host: Database host
      * port: Database port
      * dbname: Database name
      * dsn: DataSource name which can be used in PDO::__construct
-     * dsn2: DataSource name which is more readable, does not contain driver name.
-     * @return array Database info
+     * dsn2: DataSource name which is more readable, does not contain driver name
      */
     public function getDBInfo(): array { return $this->dbInfo; }
     
@@ -62,38 +57,51 @@ final class DBConn
 
     public function inTransaction(): bool { return $this->pdo->inTransaction(); }
 
+    /**
+     * @throws PDOException Active transaction
+     * @return OpResult
+     */
     public function beginTransaction(bool $isThrowEx = FALSE): OpResult 
     { 
         return $this->execContext(OpContext::beginTransaction(), $isThrowEx); 
     }
 
+    /**
+     * @throws PDOException No active transaction
+     * @return OpResult
+     */
     public function commit(bool $isThrowEx = FALSE): OpResult 
     { 
         return $this->execContext(OpContext::commit(), $isThrowEx); 
     }
 
+    /**
+     * @throws PDOException No active transaction
+     * @return OpResult
+     */
     public function rollBack(bool $isThrowEx = FALSE): OpResult 
     { 
         return $this->execContext(OpContext::rollBack(), $isThrowEx); 
     }
 
     /**
-     * 
+     * Execute a query with parameter and get result
+     * @var string $sql SQL string
+     * @var array $param Parameters
+     * @var array $tags Custom tags
+     * @var bool $isThrowEx Whether to throw caught PDOException
+     * @throws PDOException 
+     * @return OpResult
      */
-    public function exec(
-        string $sql, 
-        array $rawParam = [],
-        array $tags = [], 
-        bool $isThrowEx = FALSE
-    ): OpResult
-    { return $this->execContext(OpContext::nonTcl($sql, $rawParam, $tags), $isThrowEx); }
+    public function exec(string $sql, array $param = [], array $tags = [], bool $isThrowEx = FALSE): OpResult
+    { 
+        return $this->execContext(OpContext::nonTcl($sql, $param, $tags), $isThrowEx); 
+    }
 
     /**
      * Perform database action with given OpContext.
-     * 
      * @param OpContext $opContext 
-     * @param bool $isThrowEx Whether to rethrow the PDOException caught in this function
-     * 
+     * @param bool $isThrowEx Whether to throw caught PDOException
      * @throws PDOException
      * @return OpResult 
      */
@@ -148,31 +156,33 @@ final class DBConn
 final class OpContext
 {
     /**
-     * If $this->isTcl is true, the value is one of the following values:
-     * beginTransaction
-     * commit
-     * rollBack
-     * 
-     * otherwise, the value will be the SQL string  
+     * @var string $sql The SQL string used to construct a PDOStatement.
+     * If $isTcl is true, the value will be replaced by the corresponding value (begin / commit / rollBack)
      */
     private string $sql = "";
     public function getSql(): string { return $this->sql; }
 
-
+    /**
+     * @var array $rawParam Parameters injected into this class
+     * It is not necessarily that each value in this array will be used by the PDOStatement
+     */
     private array $rawParam = [];
     public function getRawParam(): array { return $this->rawParam; }
 
+    /**
+     * @var array $sqlParam Params used by the PDOStatement
+     */
     private array $sqlParam = [];
     public function getSqlParam(): array { return $this->sqlParam; }
 
     /**
-     * Is Transaction Control Language (begin / commit / rollBack)
+     * @var bool $isTcl Whether the statement is a transaction control language (begin / commit / rollBack)
      */
     private bool $isTcl = FALSE;
     public function getIsTcl(): bool { return $this->isTcl; }
 
     /**
-     * Custom tags used for storing external info or fields
+     * @var array $tags Custom assoc array storing external info for reference
      */
     private array $tags = [];
     public function setTags(array $tags): void
@@ -214,18 +224,22 @@ final class OpResult
     public function getContext(): OpContext { return $this->ctxt; }
 
     /**
-     * @var string $sqlState 5-Digit String
+     * @var string $sqlState 5-Digit String retrievied from
+     * PDO::errorInfo or PDOStatement::errorInfo or PDOException::errorInfo
      */
     private string $sqlState = "";
     public function getSqlState(): string { return $this->sqlState; }
 
+    /**
+     * @var ?Exception $ex The PDOException instance, null if the database operation is successful.
+     */
     private ?Exception $ex = NULL;
     public function getException(): ?Exception { return $this->ex; }
 
     public function getIsSuccess(): bool { return $this->ex === NULL; }
 
     /**
-     * @var string $errMsg Error message. Empty when there is no error.
+     * @return string Exception message if not null, otherwise empty string
      */
     public function getErrMsg(): string 
     { 
@@ -233,7 +247,7 @@ final class OpResult
     }
 
     /**
-     * @var string PDOException::getTraceAsString(). Empty when there is no error.
+     * @return string Exception trace if not null, otherwise empty string
      */
     public function getTrace(): string 
     { 
@@ -241,12 +255,16 @@ final class OpResult
     }
 
     /**
-     * The number of rows affected by a INSERT / UPDATE / DELETE statement,
-     * or the number of rows returned by a SELECT statement
+     * @var int $rowCount Number of rows affected by INSERT / UPDATE / DELETE statement,
+     * or the number of rows returned by SELECT statement
      */
     private int $rowCount = 0;
     public function getRowCount(): int { return $this->rowCount; }
 
+    /**
+     * @var array $dataSet Rows returned by SELECT statement,
+     * or INSERT / UPDATE / DELETE statement with keyword 'RETURNING'
+     */
     private array $dataSet = [];
     public function getDataSet(): array { return $this->dataSet; }
 

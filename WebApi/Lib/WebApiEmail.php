@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @author Eric
+ */
+
 require_once 'PHPMailer/Exception.php';
 require_once 'PHPMailer/PHPMailer.php';
 require_once 'PHPMailer/SMTP.php';
@@ -51,7 +55,7 @@ final class WebApiEmailSender
         array $addrList
     )
     {
-        $this->mail = new PHPMailer(TRUE);  // Set true to throw Ex
+        $this->mail = new PHPMailer(TRUE);  // Set true to throw caught PHPMailerException
         $this->mail->IsSMTP();
         $this->mail->IsHTML(TRUE);
         $this->mail->CharSet = "UTF-8";
@@ -126,7 +130,8 @@ final class WebApiEmailSender
     }
 
     /**
-     * @param bool $isThrowEx Whether to throw exception caught
+     * @param bool $isThrowEx Whether to throw caught exception
+     * @throws PHPMailerException
      * @return bool
      */
     public function send(WebApiEmail $email, bool $isThrowEx = FALSE): bool
@@ -135,6 +140,7 @@ final class WebApiEmailSender
         $result = TRUE;
         $emailAddrList = $email->getAddrList();
         try {
+            // if not empty then override WebApiEmailSender::$savedAddrList
             if (!empty($emailAddrList)) {
                 $this->mail->clearAddresses();
                 foreach ($emailAddrList as $addr => $name) {
@@ -149,8 +155,8 @@ final class WebApiEmailSender
             $caughtEx = $e;
             $result = FALSE;
         } finally {
+            // if not empty then restore WebApiEmailSender::$savedAddrList
             if (!empty($emailAddrList)) {
-                echo "Switch to sender addr".PHP_EOL;
                 $this->mail->clearAddresses();
                 foreach ($this->savedAddrList as $addr => $name) {
                     $this->mail->addAddress($addr, $name);
@@ -170,8 +176,10 @@ final class WebApiEmailSender
     }
 
     /**
+     * @param string $subject Email subject
+     * @param string $body Email body
      * @throws PHPMailerException
-     * @return bool
+     * @return bool Whether the mail is sent successfully
      */
     public function sendRaw(string $subject, string $body): bool
     {
@@ -200,7 +208,7 @@ final class WebApiEmail
     public function getRows(): array { return $this->rows; }
 
     /**
-     * Overrides WebApiEmailSender::$savedAddrList
+     * @var array $addrList Overrides WebApiEmailSender::$savedAddrList
      */
     private array $addrList = [];
     public function getAddrList(): array { return $this->addrList; }
@@ -220,12 +228,17 @@ final class WebApiEmail
         }
     }
 
-    public static function fromException(string $subject, Exception $e): self
+    public static function fromException(string $subject, Exception $e, array $other = []): self
     {
-        return new self($subject, [ 
+        foreach ($other as $k => $v) {
+            if (!(is_string($k) && is_string($v))) {
+                unset($other[$k]);
+            }
+        }
+        return new self($subject, array_merge($other, [ 
             "Error" => str_replace("\n", "<br>", $e->getMessage()), 
             "Trace" => str_replace("\n", "<br>", $e->getTraceAsString())
-        ]);
+        ]));
     }
 
     public static function errorOnly(string $subject, string $errMsg): self 

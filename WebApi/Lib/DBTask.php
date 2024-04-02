@@ -5,14 +5,12 @@ require_once 'DBConn.php';
 abstract class DBTask
 {
     /**
-     * The data structure to be iterated
+     * @var array $body The data structure to be iterated
      */
     protected array $body = [];
     public function getInput(): array { return $this->body; }
 
     /**
-     * This function MUST be overriden by derived class, 
-     * and SHOULD guarantee that the returning DBTaskMidResult contains a list of OpContext 
      * @param DBConn $conn Database connection
      * @return array Flattened 1D array of OpContext
      */
@@ -22,7 +20,7 @@ abstract class DBTask
      * Perform batch task with given database connection
      * @param DBConn $conn Database connection
      * @param bool $useTransaction Should the task run inside a transaction ?
-     * @throws \PDOException If DBConn already has an active transaction and $useTransaction is TRUE
+     * @throws PDOException If DBConn already has an active transaction and $useTransaction is TRUE
      * @return DBTaskResult A list of OpResult, and extra info
      */
     public function run(DBConn $conn, bool $useTransaction): DBTaskResult
@@ -77,7 +75,7 @@ abstract class DBTask
      * which returns a OpResult instance.
      * 
      * Do something that requires immediate handle of OpResult (E.g. write result into to error log)
-     * @param OpResult $opResult
+     * @param OpResult $opResult 
      * @return void
      */
     protected function onTaskGetOpResult(OpResult $opResult): void { }
