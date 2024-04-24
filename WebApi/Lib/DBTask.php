@@ -26,7 +26,6 @@ abstract class DBTask
     public function run(DBConn $conn, bool $useTransaction): DBTaskResult
     {
         $isError = FALSE;
-        
         $opContextList = [];
         $opResultList = [];
         
