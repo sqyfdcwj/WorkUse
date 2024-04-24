@@ -97,12 +97,12 @@ final class WebApiEmailSender
         $this->addAddrList($addrList);
     }
 
-    public function addEmail(WebApiEmail $email): void
+    public function addEmail(AWebApiEmail $email): void
     {
         $this->savedEmailList[spl_object_hash($email)] = $email;
     }
 
-    public function delEmail(WebApiEmail $email): void
+    public function delEmail(AWebApiEmail $email): void
     {
         unset($this->savedEmailList[spl_object_hash($email)]);
     }
