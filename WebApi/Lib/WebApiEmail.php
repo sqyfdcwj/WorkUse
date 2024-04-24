@@ -38,22 +38,43 @@ final class WebApiEmailUser
     }
 }
 
+trait WebApiEmailAddrTrait
+{
+    protected array $addrList = [];
+    public function getAddrList(): array { return $this->addrList; }
+
+    public function addAddr(string $addr, string $name): void { $this->addrList[$addr] = $name; }
+
+    public function addAddrList(array $addrList): void
+    {
+        foreach ($addrList as $addr => $name) {
+            if (is_string($addr) && (is_string($name) || is_numeric($name))) {
+                $this->addAddr($addr, $name);
+            }
+        }
+    }
+
+    public function delAddr(string $addr): void { unset($this->addrList[$addr]); }
+
+    public function delAddrList(array $addrList): void
+    {
+        foreach ($addrList as $addr) { 
+            if (is_string($addr)) { 
+                $this->delAddr($addr); 
+            } 
+        }
+    }
+}
+
 final class WebApiEmailSender 
 {
+    use WebApiEmailAddrTrait;
 
     private PHPMailer $mail;
 
-    private array $baseInfoList = [];
-
-    private array $savedAddrList = [];
-
     private array $savedEmailList = [];
 
-    public function __construct(
-        WebApiEmailUser $user, 
-        array $baseInfoList, 
-        array $addrList
-    )
+    public function __construct(WebApiEmailUser $user, array $addrList, bool $isUseTLS = FALSE)
     {
         $this->mail = new PHPMailer(TRUE);  // Set true to throw caught PHPMailerException
         $this->mail->IsSMTP();
@@ -61,8 +82,11 @@ final class WebApiEmailSender
         $this->mail->CharSet = "UTF-8";
         $this->mail->SMTPAuth = TRUE;
         $this->mail->SMTPAutoTLS = FALSE;
-        $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;   // Default value = ''
-
+        if ($isUseTLS) {
+            $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;   // Default value = ''
+        } else {
+            $this->mail->SMTPSecure = "";
+        }
         $this->mail->Host = $user->host;
         $this->mail->Port = $user->port;
         $this->mail->Username = $user->username;
@@ -70,39 +94,7 @@ final class WebApiEmailSender
         $this->mail->From = $user->from;
         $this->mail->FromName = $user->fromName;
         
-        $this->addBaseInfo($baseInfoList);
-        $this->addAddress($addrList);
-    }
-
-    public function addAddress(array $addrList): void
-    {
-        foreach ($addrList as $addr => $name) {
-            if (is_string($addr) && is_string($name)) {
-                $this->savedAddrList[$addr] = $name;
-                $this->mail->addAddress($addr, $name);
-            }
-        }
-    }
-
-    public function delAddress(array $addrList): void
-    {
-        foreach ($addrList as $addr) {
-            if (!is_string($addr)) { continue; }
-            unset($this->savedAddrList[$addr]);
-        }
-        $this->mail->clearAddresses();
-        foreach ($this->savedAddrList as $addr => $name) {
-            $this->mail->addAddress($addr, $name);
-        }
-    }
-
-    public function addBaseInfo(array $baseInfoList): void
-    {
-        foreach ($baseInfoList as $k => $v) {
-            if (is_string($k) && is_string($v)) {
-                $this->baseInfoList[$k] = $v;
-            }
-        }
+        $this->addAddrList($addrList);
     }
 
     public function addEmail(WebApiEmail $email): void
@@ -134,7 +126,7 @@ final class WebApiEmailSender
      * @throws PHPMailerException
      * @return bool
      */
-    public function send(WebApiEmail $email, bool $isThrowEx = FALSE): bool
+    public function send(AWebApiEmail $email, bool $isThrowEx = FALSE): bool
     {
         $caughtEx = NULL;
         $result = TRUE;
@@ -142,25 +134,16 @@ final class WebApiEmailSender
         try {
             // if not empty then override WebApiEmailSender::$savedAddrList
             if (!empty($emailAddrList)) {
-                $this->mail->clearAddresses();
-                foreach ($emailAddrList as $addr => $name) {
-                    $this->mail->addAddress($addr, $name);
-                }
+                $this->switchAddr($emailAddrList);
             }
-            $result = $this->sendRaw(
-                $email->getSubject(), 
-                $this->getTable(array_merge($this->baseInfoList, $email->getRows()))
-            );
+            $result = $this->sendRaw($email->getSubject(), $email->getBody());
         } catch (PHPMailerException $e) {
             $caughtEx = $e;
             $result = FALSE;
         } finally {
             // if not empty then restore WebApiEmailSender::$savedAddrList
             if (!empty($emailAddrList)) {
-                $this->mail->clearAddresses();
-                foreach ($this->savedAddrList as $addr => $name) {
-                    $this->mail->addAddress($addr, $name);
-                }
+                $this->switchAddr($this->addrList);
             }
             if ($caughtEx !== NULL) {
                 if ($isThrowEx) {
@@ -188,61 +171,91 @@ final class WebApiEmailSender
         return $this->mail->send();
     }
 
-    private function getTable(array $arr): string
+    private function switchAddr(array $addrList): void
     {
-        $table = '<table border="1">';
-        foreach ($arr as $k => $v) {
-            $table .= "<tr><th>$k</th><td>$v</td></tr>";
+        $this->mail->clearAddresses();
+        foreach ($addrList as $addr => $name) {
+            $this->mail->addAddress($addr, $name);
         }
-        $table .= '</table>';
-        return $table;
     }
 }
 
-final class WebApiEmail
+abstract class AWebApiEmail
 {
-    private string $subject = "";
-    public function getSubject(): string { return $this->subject; }
-
-    private array $rows = [];
-    public function getRows(): array { return $this->rows; }
+    use WebApiEmailAddrTrait;
 
     /**
-     * @var array $addrList Overrides WebApiEmailSender::$savedAddrList
+     * @var string $subject Email Subject
      */
-    private array $addrList = [];
-    public function getAddrList(): array { return $this->addrList; }
+    protected string $subject;
+    public function getSubject(): string { return $this->subject; }
 
-    public function __construct(string $subject, array $rows, array $addrList = [])
+    abstract public function getBody(): string;
+
+    public function __construct(string $subject, array $addrList = [])
     {
         $this->subject = $subject;
-        foreach ($rows as $k => $v) {
-            if (is_string($k) && is_string($v)) {
-                $this->rows[$k] = $v;
-            }
-        }
-        foreach ($addrList as $addr => $name) {
-            if (is_string($addr) && is_string($addr)) {
-                $this->addrList[$addr] = $name;
-            }
-        }
+        $this->addAddrList($addrList);
+    }
+}
+
+/**
+ * Default WebApiEmail which contains HTML table content
+ */
+final class WebApiEmailHtmlDefault extends AWebApiEmail
+{
+    private array $fieldList;
+
+    public function __construct(string $subject, array $fieldList, array $addrList = [])
+    {
+        parent::__construct($subject, $addrList);
+        $this->fieldList = array_filter($fieldList, function ($k, $v) {
+            return (is_string($k) || is_numeric($k))
+                && (is_string($v) || is_numeric($v));
+        }, ARRAY_FILTER_USE_BOTH);
     }
 
-    public static function fromException(string $subject, Exception $e, array $other = []): self
+    public function getBody(): string
     {
-        foreach ($other as $k => $v) {
-            if (!(is_string($k) && is_string($v))) {
-                unset($other[$k]);
-            }
-        }
-        return new self($subject, array_merge($other, [ 
-            "Error" => str_replace("\n", "<br>", $e->getMessage()), 
-            "Trace" => str_replace("\n", "<br>", $e->getTraceAsString())
-        ]));
+        if (empty($this->fieldList)) { return ""; }
+        ob_start();
+?>
+        <table border="1">
+        <?php foreach ($this->fieldList as $k => $v): ?>
+            <tr><td><?=$k;?></td><td><?=$v;?></td></tr>
+        <?php endforeach; ?>
+        </table>
+<?php
+        $result = ob_get_contents();
+        ob_clean();
+        return $result;
     }
 
-    public static function errorOnly(string $subject, string $errMsg): self 
+    public static function fromException(string $subject, Exception $ex, array $other, array $addrList): self
     {
-        return new self($subject, [ "Error" => $errMsg ]);
+        return new self($subject, array_merge($other, [
+            "Error" => str_replace("\n", "<br>", $ex->getMessage()), 
+            "Trace" => str_replace("\n", "<br>", $ex->getTraceAsString())
+        ]), $addrList);
+    }
+
+    public static function errorOnly(string $subject, string $errMsg, array $other, array $addrList): self 
+    {
+        return new self($subject, array_merge($other, [ "Error" => $errMsg ]), $addrList);
+    }
+}
+
+final class WebApiEmail extends AWebApiEmail
+{
+    /**
+     * @var string $body Email body
+     */
+    private string $body = "";
+    public function getBody(): string { return $this->body; }
+
+    public function __construct(string $subject, string $body, array $addrList = [])
+    {
+        parent::__construct($subject, $addrList);
+        $this->body = $body;
     }
 }
