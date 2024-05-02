@@ -153,6 +153,10 @@ class DynamicWidgetData {
   bool get isRoot => depth == 1 && parentId == 0;
   bool get isSingle => parentId == -1;
 
+  bool get isCaption => widgetType == "Caption";
+  bool get isData => widgetType == "Data";
+  bool get isButton => widgetType == "Button";
+
   static late final Map<String, MainAxisAlignment> _mainAxisAlignmentMap
   = Map.fromEntries(MainAxisAlignment.values.map((ali) => MapEntry(ali.name.toLowerCase(), ali)));
 

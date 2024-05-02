@@ -34,8 +34,8 @@ class LocalStorage extends BootstrapImpl {
   factory LocalStorage() => _instance;
   static final _instance = LocalStorage._();
 
-  late final PackageInfo _packageInfo;
-  late final SharedPreferences _pf;
+  late PackageInfo _packageInfo;
+  late SharedPreferences _pf;
 
   String get version => _packageInfo.version;
   String get prefix => _packageInfo.packageName;

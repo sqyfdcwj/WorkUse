@@ -9,27 +9,88 @@ class DataSourceManager extends ManagerBootstrap {
   static final _instance = DataSourceManager._();
   factory DataSourceManager() => _instance;
 
-  final Set<String> _companyIdSet = {};
-  final ListStringMap _companyList = [];
-  Iterable<StringMap> get companyList => _companyList;
+  final UniqueList _companyList = UniqueList("company_id");
+  Iterable<StringMap> get companyList => _companyList.list;
 
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDataSource);
 
   @override
   void clearData() {
-    _companyIdSet.clear();
-    _companyList.clear();
+    _companyList._clear();
   }
 
   @override
   bool initWithWebApiResult(WebApiResult webApiResult) {
     if (!super.initWithWebApiResult(webApiResult)) { return false; }
     final list = webApiResult.asListStringMap(fieldName: "company_datasource");
-    _companyList.addAll(list);
-    _companyList.retainWhere((map) => _companyIdSet.add(map["company_id"] ?? ""));
-    if (_companyList.isNotEmpty) {
-      global.curCompany.value = _companyList.first;
+    if (list.isNotEmpty) {
+      _companyList._clear();
+      _companyList._addAll(list);
+      if (!_companyList.isEmpty) {
+        global.curCompany.value = _companyList.first;
+      }
     }
     return true;
+  }
+
+  @override
+  Future<bool> initFromLocal() async {
+    return _companyList._loadFromAssets("assets/DataSourceManager/company_data.json");
+  }
+}
+
+class UniqueList {
+
+  String idField;
+  final Set<String> _idSet = {};
+  final ListStringMap _list = [];
+  Iterable<StringMap> get list => _list;
+
+  UniqueList(this.idField);
+
+  bool get isEmpty => _list.isEmpty;
+
+  void _clear() {
+    _idSet.clear();
+    _list.clear();
+  }
+
+  void _add(StringMap map) {
+    if (map[idField] != null && _idSet.add(map[idField]!)) {
+      _list.add(map);
+    }
+  }
+
+  void _addAll(Iterable<StringMap> list) => list.forEach(_add);
+
+  StringMap? operator[](String id) {
+    final idx = _list.indexWhere((element) => (element[idField] != null && element[idField]! == id));
+    return idx != -1 ? _list[idx] : null;
+  }
+
+  StringMap? get first => _list.isNotEmpty ? _list.first : null;
+  StringMap? get last => _list.isNotEmpty ? _list.last : null;
+
+  Future<bool> _loadFromAssets(String path) async {
+    try {
+      final json = await rootBundle.loadString(path);
+      final list = jsonDecode(json);
+      if (list is! List) {
+        print("localAsset is invalid. Please fix");
+        return false;
+      }
+      for (final map in list) {
+        if (map is Map) {
+          _add(StringMap.from(map));
+        } else {
+          print("UniqueList::_loadFromAssets element is not StringMap");
+        }
+      }
+      print("UniqueList::_loadFromAssets OK");
+      return true;
+    } on Exception catch (e) {
+      print("UniqueList::_loadFromAssets Exception");
+      return false;
+    }
   }
 }

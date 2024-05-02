@@ -1,22 +1,28 @@
 
-/// The content of this file changes
-/// When migrating project, you should not copy this file
+/// When migrating project, you should not copy this file because every Flutter app
+/// has their own configurations
+
+/// ALL variables declared in this file will be initialized ONCE ONLY when the app is launched,
+/// in _LoadingPageState::bootstrap, which will init services to download data from remote api
+///
 
 import 'Export.dart';
 
-/// ALL variables declared here will be initialized once ONLY when the app is launched
+
 
 // App Config data
-// [
-late final expansionTileMaintainState = acMgr.getBool("ExpansionTile_maintainState.default");
-late final expansionTileInitiallyExpanded = acMgr.getBool("ExpansionTile_initiallyExpanded.default");
 
-late final scrollableEnsureVisibleDurationMS = acMgr.getInt("Scrollable.ensureVisible.duration.ms") ?? 100;
-late final commentBarFutureDelayDurationMS = acMgr.getInt("CommentBar.FutureDelayed.duration.ms") ?? 50;
+late int webApiRequestPageSize = acMgr.getInt("WebApiRequest.pageSize") ?? 50;
 
-late final poSearchCriteriaDialogBorderRadius = acMgr.getDouble("POSearchCriteriaDialog.borderRadius");
-late final povqHistoryDialogBarrierDismissible = acMgr.getBool("POVQHistoryDialog.barrierDismissible");
-late final poSearchCriteriaDialogBarrierDismissible = acMgr.getBool("POSearchCriteriaDialog.barrierDismissible");
+late bool? expansionTileMaintainState = acMgr.getBool("ExpansionTile_maintainState.default");
+late bool? expansionTileInitiallyExpanded = acMgr.getBool("ExpansionTile_initiallyExpanded.default");
+
+late int scrollableEnsureVisibleDurationMS = acMgr.getInt("Scrollable.ensureVisible.duration.ms") ?? 100;
+late int commentBarFutureDelayDurationMS = acMgr.getInt("CommentBar.FutureDelayed.duration.ms") ?? 50;
+
+late double? poSearchCriteriaDialogBorderRadius = acMgr.getDouble("POSearchCriteriaDialog.borderRadius");
+late bool? povqHistoryDialogBarrierDismissible = acMgr.getBool("POVQHistoryDialog.barrierDismissible");
+late bool? poSearchCriteriaDialogBarrierDismissible = acMgr.getBool("POSearchCriteriaDialog.barrierDismissible");
 
 // Begin of color data  [apps.flutter_text_style]
 // Cell focus color
@@ -49,18 +55,26 @@ late final statusBarColor = tsMgr.getColor("UIScreen.statusBarColor");
 late final styPOWorkflowHistRejected = tsMgr.get("POWorkflowHistory.rejected");
 late final styPOWorkflowHistChecked = tsMgr.get("POWorkflowHistory.checked");
 late final styPOWorkflowHistDefault = tsMgr.get("POWorkflowHistory.default");
-late final styButtonLabelDefault = tsMgr.get("button.label.default");
 
-late final styMenu = tsMgr.get("menu");
+
+late final styPODtlUndoPO = tsMgr.get("PODtl.btnUndoPO");
+late final styPODtlConfirmPO = tsMgr.get("PODtl.btnConfirmPO");
+
+late final styMenu = tsMgr.get("MenuDrawer.menu.caption"); // fontSize: 14, color: Colors.black
+
+// When you declare a const TextStyle() without providing any param,
+// The default value is fontSize: 14, color: Colors.black
 late final styDefault = tsMgr.get("default");
 late final styModuleFocused = tsMgr.get("Module.focused");
 late final styModuleUnfocused = tsMgr.get("Module.unfocused");
 late final styCommentListTile = tsMgr.get("PODtlCommentList.tile");
 
+// fontSize: 18, color: Colors.black
 late final styTitle = tsMgr.get("title");
 late final styPOSearchCriteriaCaption = tsMgr.get("POSearchCriteria.caption");
-late final styPOSearchCriteriaTitleBlue = tsMgr.get("POSearchCriteria.title.blue");
-late final styPOSearchCriteriaTitleRed = tsMgr.get("POSearchCriteria.title.red");
+late final styPOSearchCriteriaBtnSave = tsMgr.get("POSearchCriteria.btnSave");
+late final styPOSearchCriteriaBtnCancel = tsMgr.get("POSearchCriteria.btnCancel");
+late final styPOSearchCriteriaBtnReset = tsMgr.get("POSearchCriteria.btnReset");
 late final styPOSearchCriteriaDefault = tsMgr.get("POSearchCriteria.default");
 
 late final styModuleCaption = tsMgr.get("Module.caption");

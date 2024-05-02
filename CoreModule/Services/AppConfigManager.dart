@@ -22,6 +22,15 @@ class AppConfigManager extends SingleTypeManagerBootstrap<AppConfig>
   bool? getBool(String name) => get(name)?._boolVal;
 
   @override
+  Future<bool> init() async {
+    final result = await super.init();
+    if (result) {
+      webApi.setRequestAdditionalInfo("page_size", "$webApiRequestPageSize");
+    }
+    return result;
+  }
+
+  @override
   AppConfig getFromMap(StringMap map) {
     return AppConfig(
       int.tryParse(map["value"] ?? ""),

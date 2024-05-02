@@ -2,11 +2,13 @@
 import '../Export.dart';
 import 'package:flutter/material.dart';
 
-class GrowableList<T extends GrowableListController> extends StatefulWidget {
+class GrowableList<
+  I,
+  T extends GrowableListController<GCDelegate, I>
+> extends StatefulWidget {
 
   final T controller;
-
-  final Widget Function(int) contentBuilder;
+  final Widget Function(GCItem<I>) contentBuilder;
 
   final bool enableOnReachMin;
   final bool enableOnReachMax;
@@ -28,10 +30,10 @@ class GrowableList<T extends GrowableListController> extends StatefulWidget {
   }
 
   @override
-  GrowableListState createState() => GrowableListState();
+  GrowableListState<I, T> createState() => GrowableListState<I, T>();
 }
 
-class GrowableListState extends State<GrowableList> {
+class GrowableListState<I, T extends GrowableListController<GCDelegate, I>> extends State<GrowableList<I, T>> {
 
   final _scrollController = ScrollController(keepScrollOffset: true);
 
@@ -65,16 +67,35 @@ class GrowableListState extends State<GrowableList> {
       onPointerUp: onPointerUp,
       child: NotificationListener<ScrollEndNotification>(
         onNotification: (_) => false,
-        child: ListView.builder(
+        child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(), // DO NOT remove
           controller: _scrollController,
-          itemCount: widget.controller.elementCount,
-          itemBuilder: (_, idx) => widget.contentBuilder(idx),
-          shrinkWrap: true,
+          child: Column(children: [
+            for (int idx = 0; idx < widget.controller.elementCount; idx++)
+              buildListSection(idx),
+          ]),
         )
       )
     );
   }
+
+  Widget buildListSection(int idx) {
+    final loc = GCItemLocation.list(idx);
+    final item = widget.controller.getItem(loc);
+    if (item == null) {
+      return Container();
+    } else {
+      return GestureDetector(
+        key: item.key,
+        onTap: () {
+          widget.controller.current.value = item;
+        },
+        child: widget.contentBuilder(item)
+      );
+    }
+  }
+
+  // End of ui
 
   void onPointerUp(PointerUpEvent _) {
     if (widget.enableOnReachMin

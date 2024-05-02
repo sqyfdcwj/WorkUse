@@ -16,10 +16,9 @@ ScaffoldState get rootScaffoldState => rootScaffoldKey.currentState!;
 
 enum Module with EnumUniqueNameMixin {
 
-  checkPO("Check PO"),
-  approvePO("Approve PO"),
-  approvePOHist("Approve History"),
-  salesOrder("Sales Order"),
+  checkPO("Check Outstanding PO"),
+  approvePO("Approve Checked PO"),
+  approvePOHist("Approval PO History"),
   ;
 
   @override final String displayName;
@@ -32,7 +31,10 @@ class Global {
 
   Global._() {
     curCompany.addListener(() {
-      webApi.setRequestAdditionalInfo("company_id", curCompanyId);
+      print("Global::curCompany listener, curCompanyId = $curCompanyId");
+
+      // The user info may contains a company_id and we have to distinguish them
+      webApi.setRequestAdditionalInfo("selected_company_id", curCompanyId);
     });
   }
   static final _instance = Global._();
@@ -41,6 +43,8 @@ class Global {
   bool _isLogin = false;
   final StringMap _curUser = {};
   String get username => _curUser["username"] ?? "";
+
+  bool get isSuperUser => (_curUser["is_super_user"] ?? "") == "1";
 
   final ValueNotifier<StringMap?> curCompany = ValueNotifier(null);
   final ValueNotifier<Module> curModule = ValueNotifier(Module.checkPO);
@@ -64,6 +68,7 @@ class Global {
       return;
     }
     _curUser.keys.forEach(webApi.unsetRequestAdditionalInfo);
+    _curUser.clear();
     _isLogin = false;
   }
 }
