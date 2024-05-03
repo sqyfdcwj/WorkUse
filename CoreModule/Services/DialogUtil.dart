@@ -320,19 +320,16 @@ class DialogUtil {
   /// So the method invoked this method could return
   Future<bool> handleWebApiResultOnFail(WebApiResult webApiResult) async {
     if (webApiResult.isConnectTimeout) {
-      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiConnTimeout") ?? "Connection timeout");
       await dlg.dialogConfirm(
         title: const CaptionField(uniqueName: "dlgWebApiConnTimeout", defaultValue: "Connection timeout")
       );
       return false;
     } else if (webApiResult.isReceiveTimeout) {
-      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiRecvTimeout") ?? "Receive timeout");
       await dlg.dialogConfirm(
         title: const CaptionField(uniqueName: "dlgWebApiRecvTimeout", defaultValue: "Receive timeout")
       );
       return false;
     } else if (webApiResult.isError) {
-      // dlg.show(DlgType.alert, title: captMgr.getCaption("dlgWebApiError") ?? "Error");
       await dlg.dialogConfirm(
         title: const CaptionField(uniqueName: "dlgWebApiError", defaultValue: "Error")
       );
@@ -542,8 +539,8 @@ class DialogUtil {
     return result;
   }
 
-  final offsetTweenN = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
-  final offsetTweenS = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
+  final offsetTweenN = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero);
+  final offsetTweenS = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero);
   final offsetTweenE = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero);
   final offsetTweenW = Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero);
 

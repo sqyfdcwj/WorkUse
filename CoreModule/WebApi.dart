@@ -1,5 +1,4 @@
 
-import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'Export.dart';
@@ -9,13 +8,24 @@ final webApi = WebApi();
 class WebApi {
 
   WebApi._() {
-    setRequestAdditionalInfo("app_version", WebApiEndpoint.appVersion);
+    setRequestAdditionalInfo("app_version", WebApiEndpoint.current.appVersion);
   }
+
   static final WebApi _instance = WebApi._();
   factory WebApi() => _instance;
+
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
   final _dio = Dio(BaseOptions(
+    // This value can be set later
     connectTimeout: const Duration(seconds: 30),
   ));
+  
+
 
   /// An additional body which will be appended to every single row in every entry in WebApi::postMulti.
   /// Example: Consider a WebApi request to get a list of PO record,
@@ -54,9 +64,11 @@ class WebApi {
   /// Every key starts with prefix "request_"
   final StringMap _requestAdditionalInfo = {};
   void setRequestAdditionalInfo(String key, String value) {
+    print("WebApi::setRequestAdditionalInfo, KEY = $key VAL = $value");
     _requestAdditionalInfo["request_$key"] = value;
   }
   void unsetRequestAdditionalInfo(String key) {
+    print("WebApi::unsetRequestAdditionalInfo, KEY = $key");
     _requestAdditionalInfo.remove("request_$key");
   }
 
@@ -81,7 +93,7 @@ class WebApi {
     Map<String, dynamic> param = const <String, dynamic>{},
   }) async {
     return postMulti(
-      endpoint: WebApiEndpoint.sqlInterface,
+      endpoint: WebApiEndpoint.current.endpoint,
       param: { sqlGroupName: [ param ] }
     );
   }
@@ -90,18 +102,18 @@ class WebApi {
     required String endpoint,
     Map<SqlGroupName, List< Map<String, dynamic> > > param = const {},
   }) async {
-
     try {
       final Response<String> response = await _dio.post(
         endpoint,
-        queryParameters: WebApiEndpoint.defaultQueryParameters,
+        queryParameters: WebApiEndpoint.current.defaultParameters,
         data: {
           "request": Map<String, List< Map<String, dynamic> > >.fromEntries(
             param.entries.map((entry) {
-              return MapEntry(
+              final mapEntry = MapEntry(
                 entry.key.capitalizedName,
                 entry.value.map((map) => Map<String, dynamic>.from(map)..addAll(_requestAdditionalInfo)).toList()
               );
+              return mapEntry;
             })
           )
         },
@@ -109,10 +121,10 @@ class WebApi {
       final json = response.data ?? "";
       return WebApiResult.fromJson(json);
     } on DioException catch (e) {
-      log("WebApi::postMulti Error: ${e.type.toString()}, Message = ${e.message}");
+      print("WebApi::postMulti Error: ${e.type.toString()}, Message = ${e.message}");
       return _dioErrorHandler(e);
     } on SocketException catch (e) {
-      log("WebApi::postMulti SocketException, code = ${e.osError?.errorCode ?? 408}");
+      print("WebApi::postMulti SocketException, code = ${e.osError?.errorCode ?? 408}");
       return WebApiResult(code: e.osError?.errorCode ?? 408, message: e.osError?.message ?? e.message);
     }
   }
@@ -149,10 +161,10 @@ class WebApiResult {
         body: map["body"] is Map ? map["body"] : {},
       );
     } on FormatException catch (e) {
-      log("WebApiResult.fromJson FormatException");
+      print("WebApiResult.fromJson FormatException");
       return WebApiResult.error(e.message);
     } on Exception catch (e) {
-      log("WebApiResult.fromJson Exception");
+      print("WebApiResult.fromJson Exception");
       return WebApiResult.error(e.toString());
     }
   }
@@ -166,9 +178,19 @@ class WebApiResult {
     required T Function(dynamic) toElement,
   }) {
     final raw = body[fieldName];
-    return (raw == null) || (raw is! Map<String, List>)
-      ? Map<String, List<T>>.identity()
-      : raw.map((key, list) => MapEntry(key, list.map(toElement).toList()));
+    if (raw == null || (raw is! Map<String, dynamic>)) {
+      print(raw.runtimeType.toString());
+      print("Return MapList.identity");
+      return Map<String, List<T>>.identity();
+    } else {
+      final result = Map<String, List<T>>.identity();
+      for (final kv in raw.entries) {
+        if (kv.value is List) {
+          result[kv.key] = (kv.value as List).map(toElement).toList();
+        }
+      }
+      return result;
+    }
   }
 
   List<T> asList<T>({
@@ -189,22 +211,16 @@ class WebApiResult {
   }
 
   Map<String, List< StringMap > > asMapListStringMap({ required String fieldName }) {
-    return asMapList(fieldName: fieldName, toElement: (e) => StringMap.from(e));
-    // try {
-    //   Map<String, List> tmpMap = Map<String, List>.from(body[fieldName]);
-    //   return tmpMap.map((k, v) => MapEntry(k, v.map((e) => StringMap.from(e)).toList()));
-    // } catch (_) {
-    //   return {};
-    // }
+    try {
+      Map<String, List> tmpMap = Map<String, List>.from(body[fieldName]);
+      return tmpMap.map((k, v) => MapEntry(k, v.map((e) => StringMap.from(e)).toList()));
+    } catch (_) {
+      return {};
+    }
   }
 
   List< StringMap > asListStringMap({ required String fieldName }) {
     return asList(fieldName: fieldName, toElement: (e) => StringMap.from(e));
-    // try {
-    //   return List.from(body[fieldName]).map((e) => StringMap.from(e)).toList();
-    // } catch (_) {
-    //   return [];
-    // }
   }
 
   StringMap listSingle({ required String fieldName }) {
@@ -235,3 +251,4 @@ class WebApiResult {
     return result;
   }
 }
+

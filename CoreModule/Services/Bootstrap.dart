@@ -32,36 +32,12 @@ class Bootstrap {
   }
 
   Future<dynamic> init() async {
-    /// Execute every impl.init(). If isInit is true, remove this from the map
-    // await Future.wait(_bootstrapMap.values.map((impl) {
-    //   return impl.init().then((_) {
-    //     if (impl.isInit) {
-    //       print("${impl.runtimeType.toString()} init");
-    //       remove(impl);
-    //     } else {
-    //       print("${impl.runtimeType.toString()} unfinished");
-    //     }
-    //   });
-    // }));
     return Future.wait(_bootstrapMap.values.where((v) => !v.isInit).map((boot) => boot.init()));
   }
 
   Future<dynamic> initForce() async {
     return Future.wait(_bootstrapMap.values.map((boot) => boot.initForce()));
-    // for (final coreModule in _coreModuleList) {
-    //   add(coreModule);
-    // }
-    // return init();
   }
-
-  // Future<void> initUnfinished() async {
-  //   // for (final coreModule in _coreModuleList) {
-  //   //   if (!coreModule.isInit) {
-  //   //     add(coreModule);
-  //   //   }
-  //   // }
-  //   return init();
-  // }
 }
 
 class _BootstrapEntry {
@@ -95,14 +71,21 @@ abstract class ManagerBootstrap<T> extends BootstrapImpl {
   @override
   Future<bool> init() async {
     clearData();
-    final webApiResult = await webApiRequest;
 
-    // Try to init data from WebApiResult, if false, init data from local
-    bool result = initWithWebApiResult(webApiResult);
-    if (!result) {
-      result = await initFromLocal();
-    }
-    return result;
+    // Try to load local data first
+    final localResult = await initFromLocal();
+
+    // After loaded local data, try to load remote data, which may override local data
+    final remoteResult = await initFromRemote();
+
+    return remoteResult || localResult;
+  }
+
+  Future<bool> initFromRemote() async {
+    final webApiResult = await webApiRequest;
+    print(webApiResult.isSuccess);
+    print(WebApiEndpoint.current.endpoint);
+    return initWithWebApiResult(webApiResult);
   }
 
   /// Initialize the data structure with [WebApiResult] instance
@@ -110,7 +93,8 @@ abstract class ManagerBootstrap<T> extends BootstrapImpl {
     return webApiResult.isSuccess;
   }
 
-  Future<bool> initFromLocal() async { return true; }
+  /// Should be implemented by descendant class to load default data required by this app
+  Future<bool> initFromLocal() async { return false; }
 
   /// Clear the data structure which holds all <T> instances.
   void clearData();

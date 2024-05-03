@@ -1,4 +1,6 @@
 
+import 'TypeDef.dart';
+
 enum SqlGroupName {
 
   // Services
@@ -34,26 +36,29 @@ enum SqlGroupName {
 
 class WebApiEndpoint {
 
-  // 10.50.50.226 erp_kayue_trading__20230608
-  static String get keyKayue => "80bc515f59fda4bc3cf2b75fc5c17c4a";
+  final String endpoint;
+  final String appVersion;
+  final StringMap defaultParameters;
 
-  // Must be implemented, used by WebApi
-  static String get key => keyKayue;
+  WebApiEndpoint(this.endpoint, this.appVersion, this.defaultParameters);
 
-  // Must be implemented, used by CaptionManager
-  static String get appVersion => "99999999";  // This version will not log
+  /// This version is for test use and will not insert any log into [apps.sys_api_sql_log]
+  static const String appVersionTest = "99999999";
 
-  // http://intwebapi.kayue-elec.com
-  // http://webapi.kayue.com.hk:39801
-  static get hostTest => "http://intwebapi.kayue-elec.com";
-  static get hostProd => "http://webapi.kayue.com.hk:39801";
+  static WebApiEndpoint get current => test;
 
-  static get host => hostTest;
-  static get endpointDir => "$host/$appVersion";
+  // 10.50.50.226 erp_kayue_trading__20231228
+  static final WebApiEndpoint test = WebApiEndpoint(
+    "http://intwebapi.kayue-elec.com/20240304/SqlInterfaceMulti.php",
+    "20240304",
+    { "key": "df80f6cf96a0a585b3e4e35eee749ea5" }
+  );
 
-  // Must be implemented, used by WebApi
-  static get sqlInterface => "$endpointDir/SqlInterfaceMulti.php";
+  static final WebApiEndpoint prod = WebApiEndpoint(
+    "http://webapi.kayue.com.hk:39801/99999999/SqlInterfaceMulti.php",
+    "99999999",
 
-  // Must be implemented, used by WebApi
-  static get defaultQueryParameters => { "key": key };
+    // 10.50.50.226 erp_kayue_trading__20230608
+    { "key": "80bc515f59fda4bc3cf2b75fc5c17c4a" }
+  );
 }

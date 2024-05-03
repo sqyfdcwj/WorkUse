@@ -29,9 +29,7 @@ class TextStyleManager extends SingleTypeManagerBootstrap<TextStyle>
     return TextStyle(
       fontSize: double.tryParse(map["font_size"] ?? "14") ?? 14,
       color: DynamicWidgetData.parseColor(map, fieldA: "a", fieldR: "r", fieldG: "g", fieldB: "b"),
-      fontWeight: (int.tryParse(map["is_bold"] ?? "0") ?? 0) == 1
-        ? FontWeight.bold
-        : FontWeight.normal,
+      fontWeight: parseFontWeight(map),
       fontStyle: (int.tryParse(map["is_italic"] ?? "0") ?? 0) == 1
         ? FontStyle.italic
         : FontStyle.normal,
@@ -39,4 +37,14 @@ class TextStyleManager extends SingleTypeManagerBootstrap<TextStyle>
   }
 
   Color? getColor(String name) => get(name)?.color;
+
+  FontWeight parseFontWeight(StringMap map) {
+    int index = int.tryParse(map["font_weight"] ?? "4") ?? 4;
+    if (index >= 1 && index <= 9) {
+      // [w100, w200, w300, w400, w500, w600, w700, w800, w900]
+      return FontWeight.values[index - 1];
+    } else {
+      return FontWeight.normal; // This is equal to w400
+    }
+  }
 }

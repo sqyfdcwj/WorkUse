@@ -1,8 +1,9 @@
 
-import 'dart:convert';
-
+// import 'dart:convert';
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
+
 import '../Export.dart';
 
 final captMgr = CaptionManager();
@@ -20,6 +21,7 @@ enum CaptionLanguage with EnumUniqueNameMixin {
   const CaptionLanguage(this.displayName);
 }
 
+/// This module is not in use now
 class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
   with SingleTypeManagerBootstrapMapMixin<CaptionData> {
 
@@ -49,18 +51,17 @@ class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
     print("CaptionManager::initFromLocal");
     try {
       final json = await rootBundle.loadString("assets/CaptionManager/caption_data.json");
-      final map = jsonDecode(json);
-      if (map is Map) {
-        for (final entry in map.entries) {
-          if (entry.key is! String || entry.value is! Map) {
-            continue;
-          }
-          try {
-            dataMap[entry.key] = getFromMap(StringMap.from(entry.value));
-          } catch (e) { }
+      final list = jsonDecode(json);
+      if (list is! List) {
+        print("CaptionManager::localAsset is invalid. Please fix");
+        return false;
+      }
+      for (final map in list) {
+        if (map is Map) {
+          dataMap[map[uniqueField] ?? ""] = getFromMap(StringMap.from(map));
+        } else {
+          print("CaptionManager::initFromLocal element is not StringMap");
         }
-      } else {
-        print("The local asset is invalid !");
       }
     } on Exception catch (e) {
       return false;

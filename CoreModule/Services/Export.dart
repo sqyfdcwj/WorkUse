@@ -10,3 +10,4 @@ export 'DialogUtil.dart';
 export 'LocalStorage.dart';
 export 'TextStyleManager.dart';
 export 'TextStylePredicateManager.dart';
+
