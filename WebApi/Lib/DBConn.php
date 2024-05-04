@@ -309,7 +309,8 @@ final class OpResult
      * @param int $rowCount Number of rows returned from SELECT statement, or affected by INSERT / UPDATE / DELETE statement
      * @param array $dataSet Rows returned from a SELECT statement or INSERT / UPDATE / DELETE statement with keyword 'RETURNING'
      */
-    public function __construct(OpContext $ctxt, ?Exception $ex, string $sqlState, int $rowCount, array $dataSet) {
+    public function __construct(OpContext $ctxt, ?Exception $ex, string $sqlState, int $rowCount, array $dataSet) 
+    {
         $this->ctxt = $ctxt;
         $this->ex = $ex;
         $this->sqlState = $sqlState;

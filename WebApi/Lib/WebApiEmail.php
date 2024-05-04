@@ -231,7 +231,7 @@ final class WebApiEmailHtmlDefault extends AWebApiEmail
         return $result;
     }
 
-    public static function fromException(string $subject, Exception $ex, array $other, array $addrList): self
+    public static function fromException(string $subject, Exception $ex, array $other, array $addrList = []): self
     {
         return new self($subject, array_merge($other, [
             "Error" => str_replace("\n", "<br>", $ex->getMessage()), 
@@ -239,7 +239,7 @@ final class WebApiEmailHtmlDefault extends AWebApiEmail
         ]), $addrList);
     }
 
-    public static function errorOnly(string $subject, string $errMsg, array $other, array $addrList): self 
+    public static function errorOnly(string $subject, string $errMsg, array $other, array $addrList = []): self 
     {
         return new self($subject, array_merge($other, [ "Error" => $errMsg ]), $addrList);
     }
