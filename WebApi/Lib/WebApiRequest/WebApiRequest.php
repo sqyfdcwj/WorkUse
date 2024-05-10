@@ -1,6 +1,12 @@
 <?php
 
-require_once 'Lib/DBTask.php';
+namespace WebApiRequest;
+
+use DBTask\DBTask;
+use DBConn\DBConn;
+use DBConn\OpContext;
+use DBConn\OpResult;
+use DBTask\DBTaskResult;
 
 /**
  * DBTask::$body is confirmed to be Map<String, List>
@@ -49,11 +55,11 @@ final class WebApiRequest extends DBTask
         if (!is_array($json["request"])) {
             throw new \JsonException("Field 'request' is not array");
         }
-        $this->body = array_filter($json["request"], function ($k, $v) {
+        $this->body = array_filter($json["request"], function ($v, $k) {
             return is_string($k) && is_array($v);
         }, ARRAY_FILTER_USE_BOTH);
 
-        if (is_array($json["request_info"])) {
+        if (isset($json["request_info"]) && is_array($json["request_info"])) {
             $requestInfo = $json["request_info"];
             $this->version = is_numeric($requestInfo["request_app_version"])
                 ? intval($requestInfo["request_app_version"])
@@ -69,22 +75,27 @@ final class WebApiRequest extends DBTask
         }
     }
 
-    /**
-     * We don't need to append DBConn info in this function. DBTask::run will do that.
-     */
-    public function dryRun(DBConn $conn): array
+    public function run(DBConn $conn, bool $useTransaction): DBTaskResult
     {
-        $result = [];
+        $isError = FALSE;
+        $opContextList = [];
+        $opResultList = [];
+        
         foreach ($this->body as $sqlGroupName => $sqlGroupNameRows) {
-            // Assert this will never fail
             $opSqlGroupDtl = $this->getSqlGroupDtl($conn, [
                 "sql_group_name" => $sqlGroupName, 
                 "sql_group_version" => $this->version
             ]);
+
+            if (!$opSqlGroupDtl->getIsSuccess()) {
+                $this->log($opSqlGroupDtl);
+                return new DBTaskResult([ $opSqlGroupDtl ]);
+            }
+
             foreach ($sqlGroupNameRows as $rowIdx => $row) {
                 if (!is_array($row)) { continue; }
                 foreach ($opSqlGroupDtl->getDataSet() as $sqlGroupDtl) {
-                    $result[] = OpContext::nonTcl(
+                    $opContextList[] = OpContext::nonTcl(
                         $sqlGroupDtl["sql"], 
                         $row,
                         array_merge($sqlGroupDtl, $this->getRequestInfo(), [ "row" => $rowIdx ])
@@ -92,7 +103,39 @@ final class WebApiRequest extends DBTask
                 }
             }
         }
-        return $result;
+
+        if ($useTransaction) {
+            $opContext = OpContext::beginTransaction();
+            $opContext->setTags($conn->getDBInfo());
+            $opContextList = array_merge([ $opContext ], $opContextList);
+        }
+
+        foreach ($opContextList as $opContext) {
+            if ($isError || !($opContext instanceof OpContext)) { 
+                continue; 
+            }
+            $opContext->setTags($conn->getDBInfo());
+            $opResult = $conn->execContext($opContext);
+            $opResultList[] = $opResult;
+            $this->log($opResult);
+            if (!$opResult->getIsSuccess()) {
+                $isError = TRUE;
+            }
+        }
+
+        if ($useTransaction) {
+            if (!$isError) {
+                $opContext = OpContext::commit();
+            } else {
+                $opContext = OpContext::rollBack();
+            }
+            $opContext->setTags($conn->getDBInfo());
+            $opContextList[] = $opContext;
+            $opResult = $conn->execContext($opContext);
+            $opResultList[] = $opResult;
+            $this->log($opResult);
+        }
+        return new DBTaskResult($opResultList);
     }
 
     private function getSqlGroupDtl(DBConn $conn, array $param, array $tags = []): OpResult
@@ -114,40 +157,28 @@ ORDER BY sql_order;
         return $conn->exec($sql, $param, array_merge($tags, $conn->getDBInfo()));
     }
 
-    protected function onTaskGetOpResult(OpResult $opResult): void
-    {
-        $this->errLog($opResult);
-    }
-
-    private function errLog(OpResult $opResult): void
+    /**
+     * Write OpResult into error_log
+     * @param OpResult $opResult 
+     * @return void
+     */
+    private function log(OpResult $opResult): void
     {
         $opContext = $opResult->getContext();
-        $dsn2 = $opContext->getTag("dsn2");
+        $dsnShort = $opContext->getTag("dsn_short");
         $scriptName = $_SERVER["SCRIPT_NAME"];
         if ($opContext->getIsTcl()) {
             $msg = $opContext->getSql();
-            $this->outputMsg("$dsn2 | $msg | $scriptName");
+            error_log("$dsnShort | $msg | $scriptName");
         } else if ($opResult->getIsSuccess()) {
             $msg = "Success";
             $sqlName = $opContext->getTag("sql_name");
-            $this->outputMsg("$dsn2 | $msg | $sqlName | $scriptName");
+            error_log("$dsnShort | $msg | $sqlName | $scriptName");
         } else {
             $msg = $opResult->getErrMsg();
             $sqlGroupName = $opContext->getTag("sql_group_name");
             $row = $opContext->getTag("row");
-            $this->outputMsg("$dsn2 | $msg | sql_group_name = $sqlGroupName, row = $row | $scriptName");
-        }
-    }
-
-    /**
-     * Output message to error_log or output buffer (Display on screen) 
-     */
-    private function outputMsg(string $message, bool $toErrorLog = TRUE): void
-    {
-        if ($toErrorLog) {
-            error_log($message);
-        } else {
-            echo $message.PHP_EOL;
+            error_log("$dsnShort | $msg | sql_group_name = $sqlGroupName, row = $row | $scriptName");
         }
     }
 }

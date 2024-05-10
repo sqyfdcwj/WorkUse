@@ -1,5 +1,7 @@
 <?php 
 
+namespace SQLUtil;
+
 final class SQLUtil
 {
     /**
@@ -45,49 +47,18 @@ final class SQLUtil
         return $result;
     }
 
-    public static function isValid($v): bool { return is_null($v) || is_bool($v) || self::isStrOrNum($v); }
-
-    public static function isStrOrNum($v): bool { return is_int($v) || is_float($v) || is_string($v); }
+    public static function isValid($v): bool
+    {
+        return is_null($v) || is_string($v) || is_numeric($v) || is_bool($v);
+    }
 
     public static function getValue(string $name, array ...$paramList)
     {
-        $fnIsValid = function ($v) { return self::isStrOrNum($v) || is_bool($v); };
         foreach ($paramList as $param) {
-            if (isset($param[$name]) && $fnIsValid($param[$name])) {
+            if (isset($param[$name]) && self::isValid($param[$name])) {
                 return $param[$name];
             }
         }
         return NULL;
-    }
-}
-
-################################################################
-
-final class DataSetUtil
-{
-    public static function pivot(array $dataSet, string $keyFieldName): array
-    {
-        $result = [];
-        foreach ($dataSet as $row) {
-            $keyFieldValue = $row[$keyFieldName] ?? "";
-            $result[$keyFieldValue][] = $row;
-        }
-        return $result;
-    }
-
-    public static function castToStr(array &$row): void
-    {
-        foreach ($row as $name => $value) {
-            $row[$name] = strval($value);
-        }
-    }
-
-    public static function castBoolToInt(array &$row): void
-    {
-        foreach ($row as $name => $value) {
-            if (is_bool($value)) {
-                $row[$name] = intval($value);
-            }
-        }
     }
 }
