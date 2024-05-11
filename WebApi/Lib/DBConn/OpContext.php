@@ -59,9 +59,9 @@ final class OpContext
         $this->tags = $tags;
     }
 
-    public static function begin(): self { return new self(__FUNCTION__, [], TRUE); }
-    public static function commit(): self { return new self(__FUNCTION__, [], TRUE); }
-    public static function rollback(): self { return new self(__FUNCTION__, [], TRUE); }
+    public static function begin(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
+    public static function commit(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
+    public static function rollback(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
 
     public static function nonTcl(string $sql, array $rawParam, array $tags = []): self 
     { return new self($sql, $rawParam, FALSE, $tags); }

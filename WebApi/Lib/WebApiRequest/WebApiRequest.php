@@ -3,15 +3,15 @@
 namespace WebApiRequest;
 
 use DBTask\DBTask;
+use DBTask\DBTaskResult;
 use DBConn\DBConn;
 use DBConn\OpContext;
 use DBConn\OpResult;
-use DBTask\DBTaskResult;
 
 /**
- * DBTask::$body is confirmed to be Map<String, List>
+ * DBTask::$body is Map<String, List>
  */
-final class WebApiRequest extends DBTask
+class WebApiRequest extends DBTask
 {
     private int $version = 0;
     public function getVersion(): int { return $this->version; }
@@ -35,13 +35,14 @@ final class WebApiRequest extends DBTask
     }
 
     /**
-     * 
      * @return array All keys of DBTask::$body
      */
     public function getSqlGroupNameList(): array { return array_keys($this->body); }
 
     /**
+     * @param mixed $raw The raw input
      * @param $defaultVersion When failed to decode $version from the request body
+     * @throws \JsonException
      */
     public function __construct($raw, int $defaultVersion)
     {
@@ -76,75 +77,104 @@ final class WebApiRequest extends DBTask
         }
     }
 
+    /**
+     * @param DBConn $conn
+     * @param bool $useTransaction
+     * @return DBTaskResult
+     */
     public function run(DBConn $conn, bool $useTransaction = TRUE): DBTaskResult
     {
         $isError = FALSE;
-        $opContextList = [];
-        $opResultList = [];
+        // Return directly if failed to open transaction 
+        $opResultList = $this->beginTransaction($conn, $useTransaction);
+        if (!$this->isAllSuccess($opResultList)) {
+            return new DBTaskResult($opResultList);
+        }
 
+        $list = $this->execBody($conn);
+        $opResultList = array_merge($opResultList, $list);
+        $isError = !$this->isAllSuccess($opResultList);
+
+        $list = $this->endTransaction($conn, $useTransaction, $isError);
+        $opResultList = array_merge($opResultList, $list);
+        return new DBTaskResult($opResultList);
+    }
+
+    protected function beginTransaction(DBConn $conn, bool $useTransaction): array
+    {
+        if (!$useTransaction) { return []; }
+        $opResult = $conn->execContext(OpContext::begin($conn->getDBInfo()));
+        $this->log($conn->getDSNShort(), $opResult);
+        return [ $opResult ];
+    }
+
+    protected function endTransaction(DBConn $conn, bool $useTransaction, bool $isError): array
+    {
+        if (!$useTransaction) { return []; }
+        $opResult = $isError
+            ? $conn->execContext(OpContext::rollback($conn->getDBInfo()))
+            : $conn->execContext(OpContext::commit($conn->getDBInfo()));
+        $this->log($conn->getDSNShort(), $opResult);
+        return [ $opResult ];
+    }
+
+    /**
+     * Iterate DBTask::body and exec SQL for each element.
+     * @param DBConn $conn
+     * @return array
+     */
+    protected function execBody(DBConn $conn): array
+    {
+        $opResultList = [];
         $dsnShort = $conn->getDSNShort();
-        
         foreach ($this->body as $sqlGroupName => $sqlGroupNameRows) {
             $opSqlGroupDtl = $this->getSqlGroupDtl($conn, [
                 "sql_group_name" => $sqlGroupName, 
                 "sql_group_version" => $this->version
             ]);
 
+            // If failed, log and return immediately
             if (!$opSqlGroupDtl->getIsSuccess()) {
                 $this->log($dsnShort, $opSqlGroupDtl);
-                return new DBTaskResult([ $opSqlGroupDtl ]);
+                return [ $opSqlGroupDtl ];
             }
 
             foreach ($sqlGroupNameRows as $rowIdx => $row) {
                 if (!is_array($row)) { continue; }
                 foreach ($opSqlGroupDtl->getDataSet() as $sqlGroupDtl) {
-                    $opContextList[] = OpContext::nonTcl(
+                    $opResult = $conn->exec(
                         $sqlGroupDtl["sql"], 
                         $row,
                         array_merge($sqlGroupDtl, $this->getRequestInfo(), [ "row" => $rowIdx ])
                     );
+                    $opResultList[] = $opResult;
+                    $this->log($dsnShort, $opResult);   // Always log
+                    // If failed, return immediately
+                    if (!$opResult->getIsSuccess()) {
+                        return $opResultList;
+                    }
                 }
             }
         }
+        return $opResultList;
+    }
 
-        if ($useTransaction) {
-            $opContext = OpContext::begin();
-            $opContext->setTags($conn->getDBInfo());
-            $opContextList = array_merge([ $opContext ], $opContextList);
-        }
-
-        foreach ($opContextList as $opContext) {
-            if ($isError || !($opContext instanceof OpContext)) { 
-                continue; 
-            }
-            $opContext->setTags($conn->getDBInfo());
-            $opResult = $conn->execContext($opContext);
-            $opResultList[] = $opResult;
-            $this->log($dsnShort, $opResult);
-            if (!$opResult->getIsSuccess()) {
-                $isError = TRUE;
-            }
-        }
-
-        if ($useTransaction) {
-            if (!$isError) {
-                $opContext = OpContext::commit();
-            } else {
-                $opContext = OpContext::rollback();
-            }
-            $opContext->setTags($conn->getDBInfo());
-            $opContextList[] = $opContext;
-            $opResult = $conn->execContext($opContext);
-            $opResultList[] = $opResult;
-            $this->log($dsnShort, $opResult);
-        }
-        return new DBTaskResult($opResultList);
+    /**
+     * Whether given OpResult array has no element where failed
+     * @param array $opResultList OpResult array
+     * @return bool
+     */
+    protected function isAllSuccess(array $opResultList): bool
+    {
+        $fnIsError = function ($v) { return ($v instanceof OpResult) && !$v->getIsSuccess(); };
+        return empty(array_filter($opResultList, $fnIsError));
     }
 
     /**
      * Get list of queries to be executed
+     * @return OpResult
      */
-    private function getSqlGroupDtl(DBConn $conn, array $param): OpResult
+    protected function getSqlGroupDtl(DBConn $conn, array $param): OpResult
     {
         $sql = "
 SELECT sql_group_dtl_id, sql_group_name, sql_group_version,
@@ -160,11 +190,10 @@ AND sql_group_version IN (
 )
 ORDER BY sql_order;
         ";
-        return $conn->exec(
-            $sql, 
-            $param, 
-            array_merge($conn->getDBInfo(), [ "function" => "getSqlGroupDtl" ])
-        );
+        return $conn->exec($sql, $param, array_merge(
+            $conn->getDBInfo(), 
+            [ "function" => "getSqlGroupDtl" ]
+        ));
     }
 
     /**
