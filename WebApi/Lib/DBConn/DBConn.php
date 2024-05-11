@@ -5,7 +5,6 @@ namespace DBConn;
 use DBConn\OpContext;
 use DBConn\OpResult;
 
-
 /**
  * Provides PDO functionality and holds database connection info
  */
@@ -77,9 +76,9 @@ final class DBConn
      * @throws \PDOException Active transaction
      * @return OpResult
      */
-    public function beginTransaction(bool $isThrowEx = FALSE): OpResult 
+    public function begin(bool $isThrowEx = FALSE): OpResult 
     { 
-        return $this->execContext(OpContext::beginTransaction(), $isThrowEx); 
+        return $this->execContext(OpContext::begin(), $isThrowEx); 
     }
 
     /**
@@ -95,9 +94,9 @@ final class DBConn
      * @throws \PDOException No active transaction
      * @return OpResult
      */
-    public function rollBack(bool $isThrowEx = FALSE): OpResult 
+    public function rollback(bool $isThrowEx = FALSE): OpResult 
     { 
-        return $this->execContext(OpContext::rollBack(), $isThrowEx); 
+        return $this->execContext(OpContext::rollback(), $isThrowEx); 
     }
 
     /**
@@ -131,14 +130,14 @@ final class DBConn
             if ($opContext->getIsTcl()) {
                 // If TCL operation raised exception, sqlState will be NULL
                 switch ($opContext->getSql()) {
-                    case "beginTransaction":
+                    case "begin":
                         $this->pdo->beginTransaction();
                         break;
                     case "commit":
                         $this->pdo->commit();
                         break;
-                    case "rollBack":
-                        $this->pdo->rollBack();
+                    case "rollback":
+                        $this->pdo->rollback();
                         break;
                 }
             } else {
