@@ -26,12 +26,25 @@ final class WebApiResponse
     private int $state = 0;
     public function getState(): int { return $this->state; }
 
+    /**
+     * WebApiRequest::run finished without any error
+     */
     public const STATE_SUCC = 0;
 
+    /**
+     * WebApiRequest::run finished with error
+     */
     public const STATE_DBTASK_FAIL = 1;
 
+    /**
+     * WebApiRequest::run is not exectued due to other error
+     */
     public const STATE_OTHER_FAIL = 2;
 
+    /**
+     * @param ?DBTaskResult $taskResult
+     * @param ?\Exception $ex 
+     */
     private function __construct(?DBTaskResult $taskResult, ?\Exception $ex)
     {
         if ($taskResult !== NULL) {
@@ -72,9 +85,8 @@ final class WebApiResponse
         $json["message"] = $this->isSuccess ? "" : $this->ex->getMessage();
         $json["body"] = [];
         $opResultList = $this->isSuccess ? $this->taskResult->getOpResultList() : [];
+        
         foreach ($opResultList as $opResult) {
-            if (!($opResult instanceof OpResult)) { continue; }
-
             $opContext = $opResult->getContext();
             if ($opContext->getIsTcl()) { continue; }
 

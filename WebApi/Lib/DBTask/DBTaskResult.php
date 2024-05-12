@@ -12,17 +12,37 @@ final class DBTaskResult
     private ?OpResult $lastError = NULL;
     public function getLastError(): ?OpResult { return $this->lastError; }
 
+    private ?OpResult $lastTclError = NULL;
+    public function getLastTclError(): ?OpResult { return $this->lastTclError; }
+
+    private ?OpResult $lastNonTclError = NULL;
+    public function getLastNonTclError(): ?OpResult { return $this->lastNonTclError; }
+
     public function getIsSuccess(): bool { return $this->lastError === NULL; }
 
     private array $opResultList = [];
+
+    /**
+     * This function guarantees that the returning array contains **ONLY** OpResult
+     * @return array List of OpResult
+     */
     public function getOpResultList(): array { return $this->opResultList; }
 
     public function __construct(array $opResultList)
     {
-        $this->opResultList = array_filter($opResultList, function ($v) { return $v instanceof OpResult; });
+        /* Guarantees that $this->opResultList contains only OpResult */
+        $this->opResultList = array_filter(
+            $opResultList, 
+            function ($v) { return $v instanceof OpResult; }
+        );
         foreach ($this->opResultList as $opResult) {
             if (!$opResult->getIsSuccess()) {
                 $this->lastError = $opResult;
+                if ($opResult->getIsTcl()) {
+                    $this->lastTclError = $opResult;
+                } else {
+                    $this->lastNonTclError = $opResult;
+                }
             }
         }
     }
