@@ -3,9 +3,7 @@
 namespace WebApiRequest;
 
 use DBTask\DBTask;
-use DBTask\DBTaskResult;
 use DBConn\DBConn;
-use DBConn\OpContext;
 use DBConn\OpResult;
 
 /**
@@ -42,7 +40,7 @@ class WebApiRequest extends DBTask
     /**
      * @param mixed $raw The raw input
      * @param $defaultVersion When failed to decode $version from the request body
-     * @throws \JsonException
+     * @throws \JsonException If failed to decode JSON, or decoded JSON does not fulfill requirement 
      */
     public function __construct($raw, int $defaultVersion)
     {
@@ -77,56 +75,9 @@ class WebApiRequest extends DBTask
         }
     }
 
-    /**
-     * @param DBConn $conn
-     * @param bool $useTransaction
-     * @return DBTaskResult
-     */
-    public function run(DBConn $conn, bool $useTransaction = TRUE): DBTaskResult
-    {
-        $isError = FALSE;
-        // Return directly if failed to open transaction 
-        $opResultList = $this->beginTransaction($conn, $useTransaction);
-        if (!$this->isAllSuccess($opResultList)) {
-            return new DBTaskResult($opResultList);
-        }
-
-        $list = $this->execBody($conn);
-        $opResultList = array_merge($opResultList, $list);
-        $isError = !$this->isAllSuccess($opResultList);
-
-        $list = $this->endTransaction($conn, $useTransaction, $isError);
-        $opResultList = array_merge($opResultList, $list);
-        return new DBTaskResult($opResultList);
-    }
-
-    protected function beginTransaction(DBConn $conn, bool $useTransaction): array
-    {
-        if (!$useTransaction) { return []; }
-        $opResult = $conn->execContext(OpContext::begin($conn->getDBInfo()));
-        $this->log($conn->getDSNShort(), $opResult);
-        return [ $opResult ];
-    }
-
-    protected function endTransaction(DBConn $conn, bool $useTransaction, bool $isError): array
-    {
-        if (!$useTransaction) { return []; }
-        $opResult = $isError
-            ? $conn->execContext(OpContext::rollback($conn->getDBInfo()))
-            : $conn->execContext(OpContext::commit($conn->getDBInfo()));
-        $this->log($conn->getDSNShort(), $opResult);
-        return [ $opResult ];
-    }
-
-    /**
-     * Iterate DBTask::body and exec SQL for each element.
-     * @param DBConn $conn
-     * @return array
-     */
     protected function execBody(DBConn $conn): array
     {
         $opResultList = [];
-        $dsnShort = $conn->getDSNShort();
         foreach ($this->body as $sqlGroupName => $sqlGroupNameRows) {
             $opSqlGroupDtl = $this->getSqlGroupDtl($conn, [
                 "sql_group_name" => $sqlGroupName, 
@@ -135,7 +86,7 @@ class WebApiRequest extends DBTask
 
             // If failed, log and return immediately
             if (!$opSqlGroupDtl->getIsSuccess()) {
-                $this->log($dsnShort, $opSqlGroupDtl);
+                $this->onOpResult($opSqlGroupDtl);
                 return [ $opSqlGroupDtl ];
             }
 
@@ -148,7 +99,7 @@ class WebApiRequest extends DBTask
                         array_merge($sqlGroupDtl, $this->getRequestInfo(), [ "row" => $rowIdx ])
                     );
                     $opResultList[] = $opResult;
-                    $this->log($dsnShort, $opResult);   // Always log
+                    $this->onOpResult($opSqlGroupDtl);
                     // If failed, return immediately
                     if (!$opResult->getIsSuccess()) {
                         return $opResultList;
@@ -157,17 +108,6 @@ class WebApiRequest extends DBTask
             }
         }
         return $opResultList;
-    }
-
-    /**
-     * Whether given OpResult array has no element where failed
-     * @param array $opResultList OpResult array
-     * @return bool
-     */
-    protected function isAllSuccess(array $opResultList): bool
-    {
-        $fnIsError = function ($v) { return ($v instanceof OpResult) && !$v->getIsSuccess(); };
-        return empty(array_filter($opResultList, $fnIsError));
     }
 
     /**
@@ -196,12 +136,7 @@ ORDER BY sql_order;
         ));
     }
 
-    /**
-     * Write OpResult info to error_log
-     * @param OpResult $opResult 
-     * @return void
-     */
-    private function log(string $dsnShort, OpResult $opResult): void
+    protected function onOpResult(OpResult $opResult): void
     {
         $opContext = $opResult->getContext();
         $dsnShort = $opContext->getTag("dsn_short");

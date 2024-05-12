@@ -1,12 +1,12 @@
 <?php
 
 /**
- * @param string $rawClass Full path of class
+ * @param string $className Fully qualified class name
  * @return void
  */
-function xtra_php_autoload(string $rawClass): void
+function xtra_php_autoload(string $className): void
 {
-    $fileName = basename(__DIR__)."/".str_replace("\\", "/", $rawClass.".php");
+    $fileName = basename(__DIR__)."/".str_replace("\\", "/", $className.".php");
     if (file_exists($fileName)) {
         require_once $fileName;
     } else {
@@ -21,3 +21,4 @@ function xtra_php_autoload(string $rawClass): void
 }
 
 spl_autoload_register("xtra_php_autoload");
+
