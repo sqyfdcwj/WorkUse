@@ -49,26 +49,26 @@ SELECT :sql_group_dtl_id, :sql_group_name,
         $state = $response->getState();
         $responseBodyParam = [ "response_body" => $response->getResponseBody() ];
         if ($state === WebApiResponse::STATE_SUCC) {
-            $opResult = $this->conn->exec($sql, array_merge($env, $responseBodyParam));
+            $dbResult = $this->conn->exec($sql, array_merge($env, $responseBodyParam));
         } else if ($state === WebApiResponse::STATE_DBTASK_FAIL) {
             $lastError = $response->getLastError();
-            $opResult = $this->conn->exec($sql, array_merge(
+            $dbResult = $this->conn->exec($sql, array_merge(
                 $env, 
                 $responseBodyParam,
                 $lastError->getStmt()->getTags(),
                 [ "err_msg" => $lastError->getErrMsg() ]
             ));
         } else {
-            $opResult = $this->conn->exec($sql, array_merge(
+            $dbResult = $this->conn->exec($sql, array_merge(
                 $env, 
                 $responseBodyParam,
                 [ "err_msg" => $response->getException()->getMessage() ]
             ));
         }
-        if (!$opResult->getIsSuccess()) {
+        if (!$dbResult->getIsSuccess()) {
             error_log($this->conn->getDSNShort()." | ".__METHOD__." failed");
-            error_log($opResult->getErrMsg());
+            error_log($dbResult->getErrMsg());
         }
-        return $opResult;
+        return $dbResult;
     }
 }

@@ -121,12 +121,12 @@ final class DBConn
 
     /**
      * Perform database action with given DBStmt.
-     * @param DBStmt $opContext 
+     * @param DBStmt $stmt 
      * @param bool $isThrowEx Whether to throw caught PDOException
      * @throws \PDOException
      * @return DBResult 
      */
-    public function execContext(DBStmt $opContext, bool $isThrowEx = false): DBResult
+    public function execContext(DBStmt $stmt, bool $isThrowEx = false): DBResult
     {
         $sqlState = "";
         $rowCount = 0;
@@ -134,9 +134,9 @@ final class DBConn
         $caughtEx = null;
         $execTime = 0;
         try {
-            if ($opContext->getIsTcl()) {
+            if ($stmt->getIsTcl()) {
                 // If TCL operation raised exception, sqlState will be null
-                switch ($opContext->getSql()) {
+                switch ($stmt->getSql()) {
                     case "begin":
                         $this->pdo->beginTransaction();
                         break;
@@ -148,9 +148,9 @@ final class DBConn
                         break;
                 }
             } else {
-                $stmt = $this->pdo->prepare($opContext->getSql());     
+                $stmt = $this->pdo->prepare($stmt->getSql());     
                 $startTime = microtime(true);       
-                $stmt->execute($opContext->getSqlParam());
+                $stmt->execute($stmt->getSqlParam());
                 $endTime = microtime(true);
                 $execTime = $endTime - $startTime;
                 $sqlState = $stmt->errorCode() ?? "";
@@ -167,7 +167,7 @@ final class DBConn
         }
 
         return new DBResult(
-            $opContext,
+            $stmt,
             $caughtEx,
             $sqlState,
             $rowCount,

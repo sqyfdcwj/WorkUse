@@ -57,9 +57,9 @@ abstract class DBTask
      */
     protected function beginTransaction(DBConn $conn): DBResult
     {
-        $opResult = $conn->execContext(DBStmt::begin($conn->getDBInfo()));
-        $this->onOpResult($opResult);
-        return $opResult;
+        $dbResult = $conn->execContext(DBStmt::begin($conn->getDBInfo()));
+        $this->onResult($dbResult);
+        return $dbResult;
     }
 
     /**
@@ -69,11 +69,11 @@ abstract class DBTask
      */
     protected function endTransaction(DBConn $conn, bool $isError): DBResult
     {
-        $opResult = $isError
+        $dbResult = $isError
             ? $conn->execContext(DBStmt::rollback($conn->getDBInfo()))
             : $conn->execContext(DBStmt::commit($conn->getDBInfo()));
-        $this->onOpResult($opResult);
-        return $opResult;
+        $this->onResult($dbResult);
+        return $dbResult;
     }
 
     /** 
@@ -90,8 +90,8 @@ abstract class DBTask
      */
     protected function isAllSuccess(array $opResultList): bool
     {
-        foreach ($opResultList as $opResult) {
-            if (($opResult instanceof DBResult) && !$opResult->getIsSuccess()) {
+        foreach ($opResultList as $dbResult) {
+            if (($dbResult instanceof DBResult) && !$dbResult->getIsSuccess()) {
                 return false;
             }
         }
@@ -100,8 +100,8 @@ abstract class DBTask
 
     /**
      * Customized action when receiving an DBResult
-     * @param DBResult $opResult 
+     * @param DBResult $dbResult 
      * @return void
      */
-    protected function onOpResult(DBResult $opResult): void { }
+    protected function onResult(DBResult $dbResult): void { }
 }

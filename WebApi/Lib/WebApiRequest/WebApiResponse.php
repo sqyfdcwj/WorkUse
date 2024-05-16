@@ -86,13 +86,13 @@ final class WebApiResponse
         $json["body"] = [];
         $opResultList = $this->isSuccess ? $this->taskResult->getOpResultList() : [];
         
-        foreach ($opResultList as $opResult) {
-            $opContext = $opResult->getStmt();
-            if ($opContext->getIsTcl()) { continue; }
+        foreach ($opResultList as $dbResult) {
+            $stmt = $dbResult->getStmt();
+            if ($stmt->getIsTcl()) { continue; }
 
-            $dataSet = $opResult->getDataSet();
-            $sqlDisplayName = $opContext->getTag("sql_display_name");
-            $keyField = $opContext->getTag("key_field");
+            $dataSet = $dbResult->getDataSet();
+            $sqlDisplayName = $stmt->getTag("sql_display_name");
+            $keyField = $stmt->getTag("key_field");
 
             foreach ($dataSet as &$row) {
                 DataSetUtil::castBoolToInt($row);

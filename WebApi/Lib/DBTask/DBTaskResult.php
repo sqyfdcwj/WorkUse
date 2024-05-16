@@ -35,13 +35,13 @@ final class DBTaskResult
             $opResultList, 
             function ($v) { return $v instanceof DBResult; }
         );
-        foreach ($this->opResultList as $opResult) {
-            if (!$opResult->getIsSuccess()) {
-                $this->lastError = $opResult;
-                if ($opResult->getIsTcl()) {
-                    $this->lastTclError = $opResult;
+        foreach ($this->opResultList as $dbResult) {
+            if (!$dbResult->getIsSuccess()) {
+                $this->lastError = $dbResult;
+                if ($dbResult->getIsTcl()) {
+                    $this->lastTclError = $dbResult;
                 } else {
-                    $this->lastNonTclError = $opResult;
+                    $this->lastNonTclError = $dbResult;
                 }
             }
         }

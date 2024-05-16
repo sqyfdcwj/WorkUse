@@ -86,22 +86,22 @@ class WebApiRequest extends DBTask
 
             // If failed, log and return immediately
             if (!$opSqlGroupDtl->getIsSuccess()) {
-                $this->onOpResult($opSqlGroupDtl);
+                $this->onResult($opSqlGroupDtl);
                 return [ $opSqlGroupDtl ];
             }
 
             foreach ($sqlGroupNameRows as $rowIdx => $row) {
                 if (!is_array($row)) { continue; }
                 foreach ($opSqlGroupDtl->getDataSet() as $sqlGroupDtl) {
-                    $opResult = $conn->exec(
+                    $dbResult = $conn->exec(
                         $sqlGroupDtl["sql"], 
                         $row,
                         array_merge($sqlGroupDtl, $this->getRequestInfo(), [ "row" => $rowIdx ])
                     );
-                    $opResultList[] = $opResult;
-                    $this->onOpResult($opSqlGroupDtl);
+                    $opResultList[] = $dbResult;
+                    $this->onResult($opSqlGroupDtl);
                     // If failed, return immediately
-                    if (!$opResult->getIsSuccess()) {
+                    if (!$dbResult->getIsSuccess()) {
                         return $opResultList;
                     }
                 }
@@ -136,32 +136,32 @@ ORDER BY sql_order;
         ));
     }
 
-    protected function onOpResult(DBResult $opResult): void
+    protected function onResult(DBResult $dbResult): void
     {
-        $opContext = $opResult->getStmt();
-        $dsnShort = $opContext->getTag("dsn_short");
+        $stmt = $dbResult->getStmt();
+        $dsnShort = $stmt->getTag("dsn_short");
         $scriptName = $_SERVER["SCRIPT_NAME"];
 
-        $state = $opResult->getIsSuccess() ? "Succ" : "Fail";
-        if ($opContext->getIsTcl()) {
-            $sqlName = $opContext->getSql();
+        $state = $dbResult->getIsSuccess() ? "Succ" : "Fail";
+        if ($stmt->getIsTcl()) {
+            $sqlName = $stmt->getSql();
             error_log("$dsnShort | $state | $sqlName | $scriptName");
         } else {
-            $sqlName = $opContext->getTag("sql_name");
-            if ($opResult->getIsSuccess()) {
+            $sqlName = $stmt->getTag("sql_name");
+            if ($dbResult->getIsSuccess()) {
                 error_log("$dsnShort | $state | $sqlName | $scriptName");
             } else {
-                if ($opContext->getTag("function") === "getSqlGroupDtl") {
+                if ($stmt->getTag("function") === "getSqlGroupDtl") {
                     $sqlName = "WebApiRequest::getSqlGroupDtl";
                     error_log("$dsnShort | $state | $sqlName | $scriptName");
-                    error_log($opResult->getErrMsg());
+                    error_log($dbResult->getErrMsg());
                     return;
                 } 
 
-                $sqlGroupName = $opContext->getTag("sql_group_name");
-                $row = $opContext->getTag("row");
+                $sqlGroupName = $stmt->getTag("sql_group_name");
+                $row = $stmt->getTag("row");
                 error_log("$dsnShort | $state | $sqlName | Error loc: $sqlGroupName[$row] | $scriptName");
-                error_log($opResult->getErrMsg());
+                error_log($dbResult->getErrMsg());
             }
         }
     }
