@@ -2,8 +2,8 @@
 
 namespace DBConn;
 
-use DBConn\OpContext;
-use DBConn\OpResult;
+use DBConn\DBStmt;
+use DBConn\DBResult;
 
 /**
  * Provides PDO functionality and holds database connection info
@@ -73,30 +73,36 @@ final class DBConn
     public function inTransaction(): bool { return $this->pdo->inTransaction(); }
 
     /**
+     * @param array $tags
+     * @param bool $isThrowEx
      * @throws \PDOException Active transaction
-     * @return OpResult
+     * @return DBResult
      */
-    public function begin(bool $isThrowEx = FALSE): OpResult 
+    public function begin(array $tags = [], bool $isThrowEx = false): DBResult 
     { 
-        return $this->execContext(OpContext::begin(), $isThrowEx); 
+        return $this->execContext(DBStmt::begin($tags), $isThrowEx); 
     }
 
     /**
+     * @param array $tags
+     * @param bool $isThrowEx
      * @throws \PDOException No active transaction
-     * @return OpResult
+     * @return DBResult
      */
-    public function commit(bool $isThrowEx = FALSE): OpResult 
+    public function commit(array $tags = [], bool $isThrowEx = false): DBResult 
     { 
-        return $this->execContext(OpContext::commit(), $isThrowEx); 
+        return $this->execContext(DBStmt::commit($tags), $isThrowEx); 
     }
 
     /**
+     * @param array $tags
+     * @param bool $isThrowEx
      * @throws \PDOException No active transaction
-     * @return OpResult
+     * @return DBResult
      */
-    public function rollback(bool $isThrowEx = FALSE): OpResult 
+    public function rollback(array $tags = [], bool $isThrowEx = false): DBResult 
     { 
-        return $this->execContext(OpContext::rollback(), $isThrowEx); 
+        return $this->execContext(DBStmt::rollback($tags), $isThrowEx); 
     }
 
     /**
@@ -106,29 +112,30 @@ final class DBConn
      * @var array $tags Custom tags
      * @var bool $isThrowEx Whether to throw caught PDOException
      * @throws \PDOException 
-     * @return OpResult
+     * @return DBResult
      */
-    public function exec(string $sql, array $param = [], array $tags = [], bool $isThrowEx = FALSE): OpResult
+    public function exec(string $sql, array $param = [], array $tags = [], bool $isThrowEx = false): DBResult
     { 
-        return $this->execContext(OpContext::nonTcl($sql, $param, $tags), $isThrowEx); 
+        return $this->execContext(DBStmt::nonTcl($sql, $param, $tags), $isThrowEx); 
     }
 
     /**
-     * Perform database action with given OpContext.
-     * @param OpContext $opContext 
+     * Perform database action with given DBStmt.
+     * @param DBStmt $opContext 
      * @param bool $isThrowEx Whether to throw caught PDOException
      * @throws \PDOException
-     * @return OpResult 
+     * @return DBResult 
      */
-    public function execContext(OpContext $opContext, bool $isThrowEx = FALSE): OpResult
+    public function execContext(DBStmt $opContext, bool $isThrowEx = false): DBResult
     {
         $sqlState = "";
         $rowCount = 0;
         $dataSet = [];
-        $caughtEx = NULL;
+        $caughtEx = null;
+        $execTime = 0;
         try {
             if ($opContext->getIsTcl()) {
-                // If TCL operation raised exception, sqlState will be NULL
+                // If TCL operation raised exception, sqlState will be null
                 switch ($opContext->getSql()) {
                     case "begin":
                         $this->pdo->beginTransaction();
@@ -141,8 +148,11 @@ final class DBConn
                         break;
                 }
             } else {
-                $stmt = $this->pdo->prepare($opContext->getSql());            
+                $stmt = $this->pdo->prepare($opContext->getSql());     
+                $startTime = microtime(true);       
                 $stmt->execute($opContext->getSqlParam());
+                $endTime = microtime(true);
+                $execTime = $endTime - $startTime;
                 $sqlState = $stmt->errorCode() ?? "";
                 $dataSet = $stmt->fetchAll(\PDO::FETCH_ASSOC);
                 $rowCount = $stmt->rowCount();
@@ -156,7 +166,7 @@ final class DBConn
             }
         }
 
-        return new OpResult(
+        return new DBResult(
             $opContext,
             $caughtEx,
             $sqlState,

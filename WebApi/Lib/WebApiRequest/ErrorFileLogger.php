@@ -8,7 +8,7 @@ final class ErrorFileLogger
     {
         $state = $response->getState();
         if ($state === WebApiResponse::STATE_SUCC) {
-            return TRUE;
+            return true;
         }
 
         $env = array_filter($env, function ($v, $k) {
@@ -18,7 +18,7 @@ final class ErrorFileLogger
         $other = [];
         if ($state === WebApiResponse::STATE_DBTASK_FAIL) {
             $error = $response->getLastError();
-            $context = $error->getContext();
+            $context = $error->getStmt();
             $other = [
                 "Database" => $context->getTag("dsn_short"),
                 "Error" => $error->getErrMsg(),
@@ -42,7 +42,7 @@ final class ErrorFileLogger
 
         $dir = "ErrorReport/".date("Ymd");
         if (!is_dir($dir)) {
-            mkdir($dir, 0755, TRUE);
+            mkdir($dir, 0755, true);
         }
 
         $fileName = date("Ymd_His", $_SERVER["REQUEST_TIME"]).".txt";

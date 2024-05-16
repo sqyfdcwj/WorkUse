@@ -27,11 +27,11 @@ final class SQLUtil
     /**
      * Internally calls SQLUtil::handleSql
      */
-    public static function getParamNameList(string $sql): array
+    public static function getParamNameList(string $sql, $mark = ":"): array
     {
         $matches = [];
-        $fnRemoveColon = function ($name) { return substr($name, 1); };
-        $result = preg_match_all("/:\\w+/", self::handleSql($sql), $matches) 
+        $fnRemoveColon = function ($name) use ($mark) { return substr($name, mb_strlen($mark)); };
+        $result = preg_match_all("/$mark\\w+/", self::handleSql($sql), $matches) 
             ? array_map($fnRemoveColon, reset($matches)) 
             : [];
         return array_unique($result);
@@ -59,6 +59,6 @@ final class SQLUtil
                 return $param[$name];
             }
         }
-        return NULL;
+        return null;
     }
 }

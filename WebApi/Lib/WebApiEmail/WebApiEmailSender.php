@@ -18,12 +18,12 @@ final class WebApiEmailSender
         array $addrList
     )
     {
-        $this->mail = new PHPMailer(TRUE);  // Set true to throw caught PHPMailerException
+        $this->mail = new PHPMailer(true);  // Set true to throw caught PHPMailerException
         $this->mail->IsSMTP();
-        $this->mail->IsHTML(TRUE);
+        $this->mail->IsHTML(true);
         $this->mail->CharSet = "UTF-8";
-        $this->mail->SMTPAuth = TRUE;
-        $this->mail->SMTPAutoTLS = FALSE;
+        $this->mail->SMTPAuth = true;
+        $this->mail->SMTPAutoTLS = false;
         $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;   // Default value = ''
 
         $this->mail->Host = $user->host;
@@ -87,10 +87,10 @@ final class WebApiEmailSender
      * @throws PHPMailerException
      * @return bool
      */
-    public function send(WebApiEmail $email, bool $isThrowEx = FALSE): bool
+    public function send(WebApiEmail $email, bool $isThrowEx = false): bool
     {
-        $caughtEx = NULL;
-        $result = TRUE;
+        $caughtEx = null;
+        $result = true;
         $emailAddrList = $email->getAddrList();
         try {
             // if not empty then override WebApiEmailSender::$savedAddrList
@@ -106,7 +106,7 @@ final class WebApiEmailSender
             );
         } catch (PHPMailerException $e) {
             $caughtEx = $e;
-            $result = FALSE;
+            $result = false;
         } finally {
             // if not empty then restore WebApiEmailSender::$savedAddrList
             if (!empty($emailAddrList)) {
@@ -115,13 +115,13 @@ final class WebApiEmailSender
                     $this->mail->addAddress($addr, $name);
                 }
             }
-            if ($caughtEx !== NULL) {
+            if ($caughtEx !== null) {
                 if ($isThrowEx) {
                     throw $e;
                 } else {
                     $msg = "[".basename(__FILE__)."][".__METHOD__."] ".$e->getMessage();
                     error_log($msg);
-                    $result = FALSE;
+                    $result = false;
                 }
             }
             return $result;

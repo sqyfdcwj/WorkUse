@@ -2,12 +2,12 @@
 
 namespace DBConn;
 
-use DBConn\OpContext;
+use DBConn\DBStmt;
 
-final class OpResult
+final class DBResult
 {
-    private OpContext $ctxt;
-    public function getContext(): OpContext { return $this->ctxt; }
+    private DBStmt $stmt;
+    public function getStmt(): DBStmt { return $this->stmt; }
 
     /**
      * @var string $sqlState 5-Digit String retrievied from
@@ -19,17 +19,17 @@ final class OpResult
     /**
      * @var ?\PDOException $ex The PDOException instance, null if the database operation is successful.
      */
-    private ?\PDOException $ex = NULL;
+    private ?\PDOException $ex = null;
     public function getException(): ?\PDOException { return $this->ex; }
 
-    public function getIsSuccess(): bool { return $this->ex === NULL; }
+    public function getIsSuccess(): bool { return $this->ex === null; }
 
     /**
      * @return string Exception message if not null, otherwise empty string
      */
     public function getErrMsg(): string 
     { 
-        return $this->ex === NULL ? "" : $this->ex->getMessage(); 
+        return $this->ex === null ? "" : $this->ex->getMessage(); 
     }
 
     /**
@@ -37,7 +37,7 @@ final class OpResult
      */
     public function getTrace(): string 
     { 
-        return $this->ex === NULL ? "" : $this->ex->getTraceAsString(); 
+        return $this->ex === null ? "" : $this->ex->getTraceAsString(); 
     }
 
     /**
@@ -55,13 +55,13 @@ final class OpResult
     public function getDataSet(): array { return $this->dataSet; }
 
     public function __construct(
-        OpContext $ctxt,
+        DBStmt $stmt,
         ?\Exception $ex,
         string $sqlState, 
         int $rowCount, 
         array $dataSet
     ) {
-        $this->ctxt = $ctxt;
+        $this->stmt = $stmt;
         $this->ex = $ex;
         $this->sqlState = $sqlState;
         $this->rowCount = $rowCount;

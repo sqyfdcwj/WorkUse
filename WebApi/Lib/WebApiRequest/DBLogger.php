@@ -3,7 +3,7 @@
 namespace WebApiRequest;
 
 use DBConn\DBConn;
-use DBConn\OpResult;
+use DBConn\DBResult;
 use WebApiRequest\WebApiResponse;
 
 final class DBLogger
@@ -15,15 +15,15 @@ final class DBLogger
         $this->conn = $conn;
     }
 
-    public function log(WebApiResponse $response, array $env): OpResult
+    public function log(WebApiResponse $response, array $env): DBResult
     {
         /*
-            sql_group_dtl_id,       NULL if succ, else OpResult::getTags
-            sql_group_name,         NULL if succ, else OpResult::getTags
-            sql_group_version,      NULL if succ, else OpResult::getTags
-            sql_name,               NULL if succ, else OpResult::getTags
-            sql,                    NULL if succ, else OpResult::getTags
-            err_msg,                NULL if succ, else OpResult::getTags
+            sql_group_dtl_id,       null if succ, else DBResult::getTags
+            sql_group_name,         null if succ, else DBResult::getTags
+            sql_group_version,      null if succ, else DBResult::getTags
+            sql_name,               null if succ, else DBResult::getTags
+            sql,                    null if succ, else DBResult::getTags
+            err_msg,                null if succ, else DBResult::getTags
             request_user_id,        env
             request_username,       env
             request_body,           env
@@ -55,7 +55,7 @@ SELECT :sql_group_dtl_id, :sql_group_name,
             $opResult = $this->conn->exec($sql, array_merge(
                 $env, 
                 $responseBodyParam,
-                $lastError->getContext()->getTags(),
+                $lastError->getStmt()->getTags(),
                 [ "err_msg" => $lastError->getErrMsg() ]
             ));
         } else {

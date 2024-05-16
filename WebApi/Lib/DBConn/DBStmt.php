@@ -4,7 +4,7 @@ namespace DBConn;
 
 use SQLUtil\SQLUtil;
 
-final class OpContext
+final class DBStmt
 {
     /**
      * @var string $sql The SQL string used to construct a PDOStatement.
@@ -27,9 +27,9 @@ final class OpContext
     public function getSqlParam(): array { return $this->sqlParam; }
 
     /**
-     * @var bool $isTcl Whether the statement is a transaction control language (begin / commit / rollBack)
+     * @var bool $isTcl Whether the statement is a transaction control language (begin / commit / rollback)
      */
-    private bool $isTcl = FALSE;
+    private bool $isTcl = false;
     public function getIsTcl(): bool { return $this->isTcl; }
 
     /**
@@ -59,10 +59,10 @@ final class OpContext
         $this->tags = $tags;
     }
 
-    public static function begin(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
-    public static function commit(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
-    public static function rollback(array $tags = []): self { return new self(__FUNCTION__, $tags, TRUE); }
+    public static function begin(array $tags = []): self { return new self(__FUNCTION__, $tags, true); }
+    public static function commit(array $tags = []): self { return new self(__FUNCTION__, $tags, true); }
+    public static function rollback(array $tags = []): self { return new self(__FUNCTION__, $tags, true); }
 
     public static function nonTcl(string $sql, array $rawParam, array $tags = []): self 
-    { return new self($sql, $rawParam, FALSE, $tags); }
+    { return new self($sql, $rawParam, false, $tags); }
 }

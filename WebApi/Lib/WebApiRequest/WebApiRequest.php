@@ -4,7 +4,7 @@ namespace WebApiRequest;
 
 use DBTask\DBTask;
 use DBConn\DBConn;
-use DBConn\OpResult;
+use DBConn\DBResult;
 
 /**
  * DBTask::$body is Map<String, List>
@@ -17,8 +17,8 @@ class WebApiRequest extends DBTask
     private string $raw = "";
     public function getRaw(): string { return $this->raw; }
 
-    private ?int $requestUserId = NULL;
-    private ?string $requestUsername = NULL;
+    private ?int $requestUserId = null;
+    private ?string $requestUsername = null;
 
     public function getRequestInfo(): array 
     { 
@@ -45,8 +45,8 @@ class WebApiRequest extends DBTask
     public function __construct($raw, int $defaultVersion)
     {
         $this->raw = $raw;
-        $json = json_decode($this->raw, TRUE);
-        if ($json === NULL) {
+        $json = json_decode($this->raw, true);
+        if ($json === null) {
             throw new \JsonException("Invalid JSON format");
         }
         if (!isset($json["request"])) {
@@ -66,10 +66,10 @@ class WebApiRequest extends DBTask
                 : $defaultVersion;
             $this->requestUserId = is_numeric($requestInfo["request_user_id"])
                 ? intval($requestInfo["request_user_id"])
-                : NULL;
+                : null;
             $this->requestUsername = is_string($requestInfo["request_username"])
                 ? $requestInfo["request_username"]
-                : NULL;
+                : null;
         } else {
             $this->version = $defaultVersion;
         }
@@ -112,9 +112,9 @@ class WebApiRequest extends DBTask
 
     /**
      * Get list of queries to be executed
-     * @return OpResult
+     * @return DBResult
      */
-    protected function getSqlGroupDtl(DBConn $conn, array $param): OpResult
+    protected function getSqlGroupDtl(DBConn $conn, array $param): DBResult
     {
         $sql = "
 SELECT sql_group_dtl_id, sql_group_name, sql_group_version,
@@ -136,9 +136,9 @@ ORDER BY sql_order;
         ));
     }
 
-    protected function onOpResult(OpResult $opResult): void
+    protected function onOpResult(DBResult $opResult): void
     {
-        $opContext = $opResult->getContext();
+        $opContext = $opResult->getStmt();
         $dsnShort = $opContext->getTag("dsn_short");
         $scriptName = $_SERVER["SCRIPT_NAME"];
 

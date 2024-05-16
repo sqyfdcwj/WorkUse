@@ -2,19 +2,19 @@
 
 namespace WebApiRequest;
 
-use DBConn\OpResult;
+use DBConn\DBResult;
 use DBTask\DBTaskResult;
 use SQLUtil\DataSetUtil;
 
 final class WebApiResponse
 {
-    private ?DBTaskResult $taskResult = NULL;
+    private ?DBTaskResult $taskResult = null;
     public function getDBTaskResult(): ?DBTaskResult { return $this->taskResult; }
 
-    private ?OpResult $lastError = NULL;
-    public function getLastError(): ?OpResult { return $this->lastError; }
+    private ?DBResult $lastError = null;
+    public function getLastError(): ?DBResult { return $this->lastError; }
 
-    private ?\Exception $ex = NULL;
+    private ?\Exception $ex = null;
     public function getException(): ?\Exception { return $this->ex; }
 
     private bool $isSuccess;
@@ -47,7 +47,7 @@ final class WebApiResponse
      */
     private function __construct(?DBTaskResult $taskResult, ?\Exception $ex)
     {
-        if ($taskResult !== NULL) {
+        if ($taskResult !== null) {
             $this->taskResult = $taskResult;
             $this->isSuccess = $taskResult->getIsSuccess();
             if ($this->isSuccess) {
@@ -58,10 +58,10 @@ final class WebApiResponse
                 $this->state = self::STATE_DBTASK_FAIL;
             }
         } else {
-            $this->taskResult = NULL;
-            $this->lastError = NULL;
+            $this->taskResult = null;
+            $this->lastError = null;
             $this->ex = $ex;
-            $this->isSuccess = FALSE;
+            $this->isSuccess = false;
             $this->state = self::STATE_OTHER_FAIL;
         }
 
@@ -87,7 +87,7 @@ final class WebApiResponse
         $opResultList = $this->isSuccess ? $this->taskResult->getOpResultList() : [];
         
         foreach ($opResultList as $opResult) {
-            $opContext = $opResult->getContext();
+            $opContext = $opResult->getStmt();
             if ($opContext->getIsTcl()) { continue; }
 
             $dataSet = $opResult->getDataSet();
@@ -112,11 +112,11 @@ final class WebApiResponse
 
     public static function fromTaskResult(DBTaskResult $taskResult): self
     {
-        return new self($taskResult, NULL);
+        return new self($taskResult, null);
     }
 
     public static function fromEx(\Exception $ex): self 
     {
-        return new self(NULL, $ex);
+        return new self(null, $ex);
     }
 }

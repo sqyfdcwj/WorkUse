@@ -3,8 +3,8 @@
 namespace DBTask;
 
 use DBConn\DBConn;
-use DBConn\OpContext;
-use DBConn\OpResult;
+use DBConn\DBStmt;
+use DBConn\DBResult;
 
 abstract class DBTask
 {
@@ -23,11 +23,11 @@ abstract class DBTask
      * Iterate DBTask::$body and perform database action for each element in collection
      * @param DBConn $conn Database connection
      * @param bool $useTransaction Whether to open a transaction
-     * @return DBTaskResult A list of OpResult, and extra info
+     * @return DBTaskResult A list of DBResult, and extra info
      */
-    public function run(DBConn $conn, bool $useTransaction = TRUE): DBTaskResult
+    public function run(DBConn $conn, bool $useTransaction = true): DBTaskResult
     {
-        $isError = FALSE;
+        $isError = false;
         $opResultList = [];
 
         if ($useTransaction) {
@@ -53,11 +53,11 @@ abstract class DBTask
 
     /**
      * @param DBConn $conn DB connection
-     * @return OpResult Result of beginTransaction
+     * @return DBResult Result of beginTransaction
      */
-    protected function beginTransaction(DBConn $conn): OpResult
+    protected function beginTransaction(DBConn $conn): DBResult
     {
-        $opResult = $conn->execContext(OpContext::begin($conn->getDBInfo()));
+        $opResult = $conn->execContext(DBStmt::begin($conn->getDBInfo()));
         $this->onOpResult($opResult);
         return $opResult;
     }
@@ -65,13 +65,13 @@ abstract class DBTask
     /**
      * @param DBConn $conn DB connection
      * @param bool $isError If true then rollback else commit
-     * @return OpResult Result of rollback or commit
+     * @return DBResult Result of rollback or commit
      */
-    protected function endTransaction(DBConn $conn, bool $isError): OpResult
+    protected function endTransaction(DBConn $conn, bool $isError): DBResult
     {
         $opResult = $isError
-            ? $conn->execContext(OpContext::rollback($conn->getDBInfo()))
-            : $conn->execContext(OpContext::commit($conn->getDBInfo()));
+            ? $conn->execContext(DBStmt::rollback($conn->getDBInfo()))
+            : $conn->execContext(DBStmt::commit($conn->getDBInfo()));
         $this->onOpResult($opResult);
         return $opResult;
     }
@@ -79,29 +79,29 @@ abstract class DBTask
     /** 
      * Iterate DBTask::$body and perform database action for each elment in collection.
      * @param DBConn $conn DB connection
-     * @return array List of OpResult
+     * @return array List of DBResult
      */
     abstract protected function execBody(DBConn $conn): array;
 
     /**
-     * Whether given OpResult array has no element where failed
-     * @param array $opResultList List of OpResult
+     * Whether given DBResult array has no element where failed
+     * @param array $opResultList List of DBResult
      * @return bool 
      */
     protected function isAllSuccess(array $opResultList): bool
     {
         foreach ($opResultList as $opResult) {
-            if (($opResult instanceof OpResult) && !$opResult->getIsSuccess()) {
-                return FALSE;
+            if (($opResult instanceof DBResult) && !$opResult->getIsSuccess()) {
+                return false;
             }
         }
-        return TRUE;
+        return true;
     }
 
     /**
-     * Customized action when receiving an OpResult
-     * @param OpResult $opResult 
+     * Customized action when receiving an DBResult
+     * @param DBResult $opResult 
      * @return void
      */
-    protected function onOpResult(OpResult $opResult): void { }
+    protected function onOpResult(DBResult $opResult): void { }
 }
