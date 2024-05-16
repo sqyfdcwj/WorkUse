@@ -148,14 +148,14 @@ final class DBConn
                         break;
                 }
             } else {
-                $stmt = $this->pdo->prepare($stmt->getSql());     
+                $pdoStmt = $this->pdo->prepare($stmt->getSql());     
                 $startTime = microtime(true);       
-                $stmt->execute($stmt->getSqlParam());
+                $pdoStmt->execute($stmt->getSqlParam());
                 $endTime = microtime(true);
                 $execTime = $endTime - $startTime;
-                $sqlState = $stmt->errorCode() ?? "";
-                $dataSet = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-                $rowCount = $stmt->rowCount();
+                $sqlState = $pdoStmt->errorCode() ?? "";
+                $dataSet = $pdoStmt->fetchAll(\PDO::FETCH_ASSOC);
+                $rowCount = $pdoStmt->rowCount();
             }
         } catch (\PDOException $e) {
             if ($isThrowEx) {
