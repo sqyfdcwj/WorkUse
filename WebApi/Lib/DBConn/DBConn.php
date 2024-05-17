@@ -148,7 +148,7 @@ final class DBConn
                         break;
                 }
             } else {
-                $pdoStmt = $this->pdo->prepare($stmt->getSql());     
+                $pdoStmt = $this->pdo->prepare($stmt->getSql());  
                 $startTime = microtime(true);       
                 $pdoStmt->execute($stmt->getSqlParam());
                 $endTime = microtime(true);
