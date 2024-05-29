@@ -14,3 +14,7 @@ Delete lines from Xth to the last line
 
 Delete lines which matches pattern
 > sed '/**PATTERN**/d' test.txt
+
+Delete **X**th last line
+> sed "$(expr \`wc -l < test.txt | bc\` + 2 - **X**)d" test.txt
+

@@ -2,8 +2,3 @@ This is line 1
 This This is line 2
 This This This is line 3
 This This This This is line 4
-
-Unix is great OS
-Unix is fres OS
-Unix is opensource
-
