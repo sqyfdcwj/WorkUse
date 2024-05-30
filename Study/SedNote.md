@@ -1,23 +1,33 @@
-Sed snippets
+**SYNOPSIS**
+sed [**-Ealn**] command [file ...]
+sed [**-Ealn**] [**-e** command] [**-f** command_file] [**-i** extension] [file ...]
 
-Delete **X**th line<br>
-> sed '**X**d' test.txt 
+**DESCRIPTION**<br>
+Reads the specified files, or the **STDIN** if no files are specified,<br>modifying the input as specified by a list of **commands**.
+The input is then written to the **STDOUT**.
 
-Delete last line<br>
-> sed '$d' test.txt
+A single command may be specified as the first argument to sed.<br> Multiple commands may be specified by using the **-e** or **-f** options.
+> sed '' a.txt
+> sed -n '3,5p' a.txt
 
-Delete lines from range **X** to **Y**<br>
-> sed '**X**, **Y**d' test.txt
+All commands are applied to the input **in the order they are specified** regardless of their origin.<br>
 
-Delete lines from Xth to the last line
-> sed '**X**, $d' test.txt
+**sed script overview**
+A sed program consists of **one or more sed commands**.
+sed commands follow this syntax:
+> [addr][X][options]
 
-Delete lines which matches pattern
-> sed '/**PATTERN**/d' test.txt
+|Part|Description|
+|:-:|:-|
+|addr|Optional line address<br>**addr** can be a single line number, a regex, or a range of lines|
+|X|Single-letter sed command<br>If **addr** is specified, X will be executed **ONLY** on the matched lines|
+|options|Used for some sed commands|
 
-Delete **X**th last line (index 0 based)
-> sed "$(expr \`wc -l < test.txt | bc\` + 1 - **X**)d" test.txt
+The following example deletes line 30 to 35 of file input.txt
+> sed '30,35d' input.txt
 
-Delete **X**th last line (index 1 based)
-> sed "$(expr \`wc -l < test.txt | bc\` + 2 - **X**)d" test.txt
-
+|Part|Value|Descrption|
+|:-|:-|:-|
+|addr|30,35|Line range|
+|X|d|Delete command|
+|Options|Not specified in this example|N/A|
