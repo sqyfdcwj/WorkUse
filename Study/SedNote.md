@@ -31,3 +31,19 @@ The following example deletes line 30 to 35 of file input.txt
 |addr|30,35|Line range|
 |X|d|Delete command|
 |Options|Not specified in this example|N/A|
+
+**sed substitute command**
+> s/regexp/replacement/flags
+
+The s command can be followed by **zero or more** of the following flags:
+
+Possible value of flags
+|flags|Description|
+|:-:|:-|
+|g|Apply the replacement to **ALL** matches to the regexp, not just the first|
+|number|Only replace the **number**th match of the regexp|
+|w|Output filename|
+
+**sed insert/append command**
+
+MacOS uses BSD sed, which is not GNU sed. 
