@@ -55,7 +55,6 @@ this this this is line 3
 
 Replace all 'this' occurance with 'That', case sensitive:
 
-
 **sed insert/append command**
 Insert means to insert text **BEFORE** a line
 Append means to insert text **AFTER** a line
@@ -89,4 +88,3 @@ Delete from line **X** to last line
 
 Delete lines match pattern
 > sed '/pattern/d' a.txt
-
