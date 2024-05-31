@@ -1,3 +1,6 @@
+**This note is based on GNU sed.**
+**MacOS uses BSD sed. Some behavior may differ from GNU sed.**
+
 **SYNOPSIS**
 sed [**-Ealn**] command [file ...]
 sed [**-Ealn**] [**-e** command] [**-f** command_file] [**-i** extension] [file ...]
@@ -40,10 +43,50 @@ The s command can be followed by **zero or more** of the following flags:
 Possible value of flags
 |flags|Description|
 |:-:|:-|
+|i|Case insensitive|
 |g|Apply the replacement to **ALL** matches to the regexp, not just the first|
 |number|Only replace the **number**th match of the regexp|
 |w|Output filename|
 
-**sed insert/append command**
+Given a.txt with content:
+this is line 1
+this this is line 2
+this this this is line 3
 
-MacOS uses BSD sed, which is not GNU sed. 
+Replace all 'this' occurance with 'That', case sensitive:
+
+
+**sed insert/append command**
+Insert means to insert text **BEFORE** a line
+Append means to insert text **AFTER** a line
+
+Insert new line without condition
+> sed 'i Newline' a.txt
+
+Insert new line before line 2
+> sed '2i Newline' a.txt
+
+Insert new line before lines matching pattern
+> sed '/pattern/i Newline' a.txt
+
+> sed '2a Newline' a.txt
+
+**sed delete command**
+Delete all content
+> sed 'd' a.txt
+
+Delete line **X**
+> sed '**X**d' a.txt
+
+Delete last line
+> sed '$d' a.txt
+
+Delete from line **X** to line **Y**
+> sed '**X**,**Y**d' a.txt
+
+Delete from line **X** to last line
+> sed '**X**,$d' a.txt
+
+Delete lines match pattern
+> sed '/pattern/d' a.txt
+
