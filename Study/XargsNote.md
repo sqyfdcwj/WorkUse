@@ -1,4 +1,3 @@
-**SYNOPSIS**<br>
-xargs [-options] [-command]
-
-The default command after xargs is echo
+Line 1
+Line 2
+Line 3
