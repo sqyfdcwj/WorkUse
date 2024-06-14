@@ -1,4 +1,4 @@
-#### This note is for GNU sed.
+Unless specified, the term `sed` refers to GNU sed.
 
 sed maintain 2 buffers: **PATTERN SPACE** and **HOLD SPACE**.<br>
 
