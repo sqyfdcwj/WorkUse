@@ -1,11 +1,8 @@
 
 WebApi/SqlInterfaceMulti.php
 WebApi/Lib/Extension
+Study/CLang/*.o
 Study/Playground
+
 .DS_Store
 **/.DS_Store
-CoreModule/.DS_Store
-Database/.DS_Store
-DBConnTest/.DS_Store
-WebApi/.DS_Store
-FlutterDoc/.DS_Store
