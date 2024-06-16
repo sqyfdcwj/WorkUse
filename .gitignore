@@ -1,7 +1,10 @@
 
 WebApi/SqlInterfaceMulti.php
 WebApi/Lib/Extension
+
+
 Study/CLang/*.o
+Study/CLang/main
 Study/Playground
 
 .DS_Store
