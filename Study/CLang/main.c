@@ -11,8 +11,6 @@ static
 
 int main()
 {
-    printBin(~(1 << 7));
-    printBin(-1);
-    printBin(-1 & ~(1 << 7));
+    test(); // Compilation fails because it is a static keyword
     return 0;
 }

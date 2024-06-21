@@ -59,3 +59,6 @@ void printBin(unsigned short s)
     }
     printf("\n");
 }
+
+static 
+void test() { printf("Test"); }
