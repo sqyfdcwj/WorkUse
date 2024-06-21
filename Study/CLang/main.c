@@ -1,10 +1,13 @@
 
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <limits.h>
-
 #include "misc.h"
+
+/*
+auto	
+register	
+extern	
+volatile
+static	
+ */
 
 int main()
 {

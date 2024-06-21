@@ -12,3 +12,5 @@ unsigned short disable(unsigned short, size_t);
 unsigned short toggle(unsigned short, size_t);
 
 void printBin(unsigned short);
+
+static void stv(void);
