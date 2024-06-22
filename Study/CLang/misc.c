@@ -60,5 +60,9 @@ void printBin(unsigned short s)
     printf("\n");
 }
 
+/**
+ * Compilation will fail if any code from other files try to access this function,
+ * even the IDE intellicense has hints.
+ */
 static 
 void test() { printf("Test"); }

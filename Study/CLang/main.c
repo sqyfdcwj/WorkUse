@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "misc.h"
 
 /*
@@ -11,6 +12,7 @@ static
 
 int main()
 {
-    test(); // Compilation fails because it is a static keyword
+    printf("%zu\n", strlen("abc\0def"));   
+    printf("");
     return 0;
 }
