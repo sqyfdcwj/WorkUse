@@ -1,5 +1,9 @@
 
+#ifndef MISC_H
+#define MISC_H
 #include <stdio.h>
+
+extern int misch;
 
 void flag(FILE *f);
 
@@ -19,3 +23,5 @@ void printBin(unsigned short);
  */
 static 
 void test();
+
+#endif

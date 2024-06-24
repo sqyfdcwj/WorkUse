@@ -1,18 +1,10 @@
 
-#include <string.h>
 #include "misc.h"
-
-/*
-auto	
-register	
-extern	
-volatile
-static	
- */
+#include <string.h>
+#include <stdlib.h>
+#include <malloc/malloc.h>
 
 int main()
 {
-    printf("%zu\n", strlen("abc\0def"));   
-    printf("");
     return 0;
 }

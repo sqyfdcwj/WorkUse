@@ -10,6 +10,9 @@ do { \
     } \
 } while (0)
 
+int misch = 330;
+
+
 void flag(FILE *fp)
 {
     if (!fp) { return; }
