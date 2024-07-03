@@ -2,9 +2,23 @@
 
 namespace WebApiRequest;
 
-final class ErrorFileLogger
+final class FileLogger
 {
-    public function log(WebApiResponse $response, array $env): bool
+    public function logRecv(string $content): bool
+    {
+        $dir = "RecvFile/".date("Ymd");
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $fileName = date("Ymd_His", $_SERVER["REQUEST_TIME"]).".txt";
+        return file_put_contents(
+            $dir.DIRECTORY_SEPARATOR.$fileName, 
+            $content,
+            FILE_APPEND | LOCK_EX
+        );   
+    }
+
+    public function logError(WebApiResponse $response, array $env): bool
     {
         $state = $response->getState();
         if ($state === WebApiResponse::STATE_SUCC) {
