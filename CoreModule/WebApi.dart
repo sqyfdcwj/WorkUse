@@ -171,6 +171,9 @@ class WebApiResult {
 
   factory WebApiResult.connectTimeout(String message) => WebApiResult(code: 408, message: message);
   factory WebApiResult.receiveTimeout(String message) => WebApiResult(code: 504, message: message);
+  factory WebApiResult.sendTimeout(String message) => WebApiResult(code: 504, message: message);
+  factory WebApiResult.badCert(String message) => WebApiResult(code: 504, message: message);
+  // factory WebApiResult.receiveTimeout(String message) => WebApiResult(code: 504, message: message);
   factory WebApiResult.error(String message) => WebApiResult(code: 500, message: message);
 
   Map<String, List<T>> asMapList<T>({

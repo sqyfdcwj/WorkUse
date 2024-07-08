@@ -22,9 +22,9 @@ class AppConfigManager extends SingleTypeManagerBootstrap<AppConfig>
   bool? getBool(String name) => get(name)?._boolVal;
 
   @override
-  Future<bool> init() async {
+  Future<String?> init() async {
     final result = await super.init();
-    if (result) {
+    if (result == null) {
       webApi.setRequestAdditionalInfo("page_size", "$webApiRequestPageSize");
     }
     return result;

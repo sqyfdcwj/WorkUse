@@ -316,9 +316,10 @@ class DialogUtil {
   //   );
   // }
 
-  /// If the webApiResult is not success, show dialog and return false
-  /// So the method invoked this method could return
-  Future<bool> handleWebApiResultOnFail(WebApiResult webApiResult) async {
+  /// Default handler for webApiResult
+  /// If webApiResult is success, return true
+  /// Otherwise pop dialog according to the error type of WebApiResult and return falses
+  Future<bool> handleWebApiResult(WebApiResult webApiResult) async {
     if (webApiResult.isConnectTimeout) {
       await dlg.dialogConfirm(
         title: const CaptionField(uniqueName: "dlgWebApiConnTimeout", defaultValue: "Connection timeout")
@@ -335,7 +336,7 @@ class DialogUtil {
       );
       return false;
     }
-    return true;
+    return webApiResult.isSuccess;
   }
 
   Future<bool> handleDataSourceEmpty() async {
@@ -377,6 +378,7 @@ class DialogUtil {
     return result;
   }
 
+  /// Pop a dialog with Yes and No buttons which is overridable by user
   Future<bool?> dialogYesNo({
     bool barrierDismissible = true,
     Color? barrierColor = Colors.black54,
@@ -430,6 +432,7 @@ class DialogUtil {
     );
   }
 
+  /// Pop a dialog with Yes and No buttons which is overridable by user
   Future<bool?> dialogConfirm({
     bool barrierDismissible = true,
     Color? barrierColor = Colors.black54,

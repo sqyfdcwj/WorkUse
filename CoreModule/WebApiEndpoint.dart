@@ -49,8 +49,8 @@ class WebApiEndpoint {
 
   // 10.50.50.226 erp_kayue_trading__20231228
   static final WebApiEndpoint test = WebApiEndpoint(
-    "http://intwebapi.kayue-elec.com/20240304/SqlInterfaceMulti.php",
-    "20240304",
+    "http://intwebapi.kayue-elec.com/20240628/SqlInterfaceMulti.php",
+    "20240628",
     { "key": "df80f6cf96a0a585b3e4e35eee749ea5" }
   );
 

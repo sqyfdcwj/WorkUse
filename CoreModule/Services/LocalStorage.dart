@@ -1,5 +1,4 @@
 
-import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Export.dart';
@@ -41,10 +40,14 @@ class LocalStorage extends BootstrapImpl {
   String get prefix => _packageInfo.packageName;
 
   @override
-  Future<bool> init() async {
-    _packageInfo = await PackageInfo.fromPlatform();
-    _pf = await SharedPreferences.getInstance();
-    return true;
+  Future<String?> init() async {
+    try {
+      _packageInfo = await PackageInfo.fromPlatform();
+      _pf = await SharedPreferences.getInstance();
+      return null;
+    } on Exception catch (e) {
+      return e.toString();
+    }
   }
 
   Future<UserCredential> _readUserCredential() async {

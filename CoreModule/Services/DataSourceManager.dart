@@ -20,21 +20,23 @@ class DataSourceManager extends ManagerBootstrap {
   }
 
   @override
-  bool initWithWebApiResult(WebApiResult webApiResult) {
-    if (!super.initWithWebApiResult(webApiResult)) { return false; }
-    final list = webApiResult.asListStringMap(fieldName: "company_datasource");
-    if (list.isNotEmpty) {
-      _companyList._clear();
-      _companyList._addAll(list);
-      if (!_companyList.isEmpty) {
-        global.curCompany.value = _companyList.first;
+  String? initWithWebApiResult(WebApiResult webApiResult) {
+    final result = super.initWithWebApiResult(webApiResult);
+    if (result == null) {
+      final list = webApiResult.asListStringMap(fieldName: "company_datasource");
+      if (list.isNotEmpty) {
+        _companyList._clear();
+        _companyList._addAll(list);
+        if (!_companyList.isEmpty) {
+          global.curCompany.value = _companyList.first;
+        }
       }
     }
-    return true;
+    return result;
   }
 
   @override
-  Future<bool> initFromLocal() async {
+  Future<String?> initFromLocal() async {
     return _companyList._loadFromAssets("assets/DataSourceManager/company_data.json");
   }
 }
@@ -71,13 +73,13 @@ class UniqueList {
   StringMap? get first => _list.isNotEmpty ? _list.first : null;
   StringMap? get last => _list.isNotEmpty ? _list.last : null;
 
-  Future<bool> _loadFromAssets(String path) async {
+  Future<String?> _loadFromAssets(String path) async {
     try {
       final json = await rootBundle.loadString(path);
       final list = jsonDecode(json);
       if (list is! List) {
         print("localAsset is invalid. Please fix");
-        return false;
+        return "localAsset is invalid. Please fix";
       }
       for (final map in list) {
         if (map is Map) {
@@ -87,10 +89,10 @@ class UniqueList {
         }
       }
       print("UniqueList::_loadFromAssets OK");
-      return true;
+      return null;
     } on Exception catch (e) {
       print("UniqueList::_loadFromAssets Exception");
-      return false;
+      return "UniqueList::_loadFromAssets Exception";
     }
   }
 }

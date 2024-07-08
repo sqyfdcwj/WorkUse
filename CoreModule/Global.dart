@@ -51,6 +51,7 @@ class Global {
 
   String get curCompanyId => curCompany.value?["company_id"] ?? "0";
 
+  /// Set state _login to true and update WebApi basic info
   void login(StringMap user) {
     if (_isLogin) {
       return;
@@ -63,6 +64,7 @@ class Global {
     _isLogin = true;
   }
 
+  /// Set state _login to false and clear WebApi basic info
   void logout() {
     if (!_isLogin) {
       return;

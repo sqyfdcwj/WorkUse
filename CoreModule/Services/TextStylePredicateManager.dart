@@ -28,8 +28,10 @@ class TextStylePredicateManager extends SingleTypeManagerBootstrap<TextStylePred
   final StringMap _sqlNameMap = {};
 
   @override
-  bool initWithWebApiResult(WebApiResult webApiResult) {
-    if (!super.initWithWebApiResult(webApiResult)) { return false; }
+  String? initWithWebApiResult(WebApiResult webApiResult) {
+    final result = super.initWithWebApiResult(webApiResult);
+    if (result != null) { return result; }
+
     // Initialized predicate data
     final list = webApiResult.asListStringMap(fieldName: sourceFieldName);
     final uniqueNameSet = <String>{};
@@ -63,7 +65,7 @@ class TextStylePredicateManager extends SingleTypeManagerBootstrap<TextStylePred
       _sqlNameMap[map["combined_name"] ?? ""] = map["sql_name"] ?? "";
     }
 
-    return true;
+    return null;
   }
 
   @override

@@ -101,6 +101,9 @@ abstract class GrowableMapListController<T extends GCDelegate, I> extends Growab
     }
   }
 
+  /// Delete the item match predicate (typically, isCurrent)
+  /// Then set curr to next item.
+  /// If no locatable item is available, curr will be set to null
   @override
   void _delete(bool Function(GCItem<I>) predicate) {
     MapEntry<String, List<GCItem<I>>>? prev, curr, next;

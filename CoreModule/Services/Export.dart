@@ -1,5 +1,5 @@
 
-export 'Bootstrap.dart';
+export '../../Deprecated/Bootstrap.dart';
 
 export 'AppConfigManager.dart';
 export 'CaptionManager.dart';

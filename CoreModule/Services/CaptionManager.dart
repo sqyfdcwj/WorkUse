@@ -1,9 +1,4 @@
 
-// import 'dart:convert';
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
-
 import '../Export.dart';
 
 final captMgr = CaptionManager();
@@ -47,14 +42,13 @@ class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
   }
 
   @override
-  Future<bool> initFromLocal() async  {
+  Future<String?> initFromLocal() async  {
     print("CaptionManager::initFromLocal");
     try {
       final json = await rootBundle.loadString("assets/CaptionManager/caption_data.json");
       final list = jsonDecode(json);
       if (list is! List) {
-        print("CaptionManager::localAsset is invalid. Please fix");
-        return false;
+        return "CaptionManager local asset is invalid";
       }
       for (final map in list) {
         if (map is Map) {
@@ -64,9 +58,9 @@ class CaptionManager extends SingleTypeManagerBootstrap<CaptionData>
         }
       }
     } on Exception catch (e) {
-      return false;
+      return e.toString();
     }
-    return true;
+    return null;
   }
 
   String? getCaption(String uniqueName, { CaptionLanguage? lang }) {

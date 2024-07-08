@@ -30,27 +30,27 @@ class DynamicWidgetManager extends SingleTypeManagerBootstrap<DynamicWidgetData>
   @override get webApiRequest => webApi.postSingle(sqlGroupName: SqlGroupName.getDynamicWidget);
 
   @override
-  bool initWithWebApiResult(WebApiResult webApiResult) {
-    if (!webApiResult.isSuccess) {
-      return false;
-    }
-    final list = webApiResult.asListStringMap(fieldName: sourceFieldName);
-    final widgetDataList = list.map(getFromMap).toList();
-    final configNameSet = <String>{};
-    final rootWidgetDataList = widgetDataList.where((data) => data.isRoot).toList();
+  String? initWithWebApiResult(WebApiResult webApiResult) {
+    final result = super.initWithWebApiResult(webApiResult);
+    if (result == null) {
+      final list = webApiResult.asListStringMap(fieldName: sourceFieldName);
+      final widgetDataList = list.map(getFromMap).toList();
+      final configNameSet = <String>{};
+      final rootWidgetDataList = widgetDataList.where((data) => data.isRoot).toList();
 
-    // Distinct on configName
-    rootWidgetDataList.retainWhere((element) => configNameSet.add(element.configName));
-    for (final rootData in rootWidgetDataList) {
-      dataMap[rootData.configName] = rootData;
-      _buildDynamicWidgetDataTree(rootData, widgetDataList);
-    }
+      // Distinct on configName
+      rootWidgetDataList.retainWhere((element) => configNameSet.add(element.configName));
+      for (final rootData in rootWidgetDataList) {
+        dataMap[rootData.configName] = rootData;
+        _buildDynamicWidgetDataTree(rootData, widgetDataList);
+      }
 
-    final singleWidgetDataList = widgetDataList.where((data) => data.isSingle).toList();
-    for (final singleData in singleWidgetDataList) {
-      dataMap[singleData.configName] = singleData;
+      final singleWidgetDataList = widgetDataList.where((data) => data.isSingle).toList();
+      for (final singleData in singleWidgetDataList) {
+        dataMap[singleData.configName] = singleData;
+      }
     }
-    return true;
+    return result;
   }
 
   void _buildDynamicWidgetDataTree(DynamicWidgetData data, List<DynamicWidgetData> widgetDataList) {

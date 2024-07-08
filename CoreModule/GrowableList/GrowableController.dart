@@ -193,7 +193,6 @@ abstract class GrowableController<T extends GCDelegate, I> extends ChangeNotifie
   }
 
   /// This method is called by onWebApiResult(), and must be implemented by the descendant class
-  /// because this method involves dataSource manipulation and the dataSource type is unknown in this class.
   @mustCallSuper
   void insert(WebApiResult webApiResult) {
     insertExtra(webApiResult);
@@ -201,8 +200,7 @@ abstract class GrowableController<T extends GCDelegate, I> extends ChangeNotifie
 
   void insertExtra(WebApiResult webApiResult) { }
 
-  /// This method is called by _deleteCurrent(), and must be implemented by the descendant class
-  /// because this method involves dataSource manipulation and the dataSource type is unknown in this class.
+  /// This function is called by _deleteCurrent(), and must be implemented by the descendant class
   void _delete(bool Function(GCItem<I>) predicate);
 
   bool isCurrent(GCItem<I>? rhs) {

@@ -53,7 +53,7 @@ class GCDelegate {
     this.onCurrentStateChanged,
     this.onConfigureParam,
   }): onEmptyDataSource = onEmptyDataSource ?? dlg.handleDataSourceEmpty,
-        onFail = onFail ?? dlg.handleWebApiResultOnFail;
+      onFail = onFail ?? dlg.handleWebApiResult;
 
 
   // Future<WebApiResult> webApiRequest(GCParam gcp) async {
